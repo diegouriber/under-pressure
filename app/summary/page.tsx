@@ -108,38 +108,6 @@ export default function SummaryPage() {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-[2rem] bg-[#1f1f1f] text-white shadow-sm">
-          <div className="grid gap-0 md:grid-cols-[0.9fr_1.1fr]">
-            <div className="relative min-h-[260px] bg-[#151515] p-6 md:p-8">
-              <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10" />
-              <div className="absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-[#c9a66b]/20" />
-
-              <div className="relative z-10">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">
-                  Pressure map
-                </p>
-
-                <div className="mt-8 space-y-4">
-                  <VisualLayer number="1" label="Practical stressor" active />
-                  <VisualLayer number="2" label="Interpretation" active />
-                  <VisualLayer number="3" label="Emotional effect" active />
-                  <VisualLayer number="4" label="Outcome meaning" />
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6 md:p-8">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">
-                Reflective interpretation
-              </p>
-
-              <h2 className="mt-4 text-2xl font-semibold leading-10 tracking-[-0.03em]">
-                {analysis.dominantPattern}
-              </h2>
-            </div>
-          </div>
-        </section>
-
         <section>
           <div className="mb-5">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
@@ -288,30 +256,6 @@ function LayerCard({
 
       <p className="mt-4 text-sm leading-7 text-[#555]">{content}</p>
     </section>
-  );
-}
-
-function VisualLayer({
-  number,
-  label,
-  active,
-}: {
-  number: string;
-  label: string;
-  active?: boolean;
-}) {
-  return (
-    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] p-3">
-      <div
-        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
-          active ? "bg-[#e7c987] text-[#1f1f1f]" : "bg-white/15 text-white"
-        }`}
-      >
-        {number}
-      </div>
-
-      <p className="text-sm font-medium text-white/80">{label}</p>
-    </div>
   );
 }
 
