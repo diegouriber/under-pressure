@@ -64,14 +64,14 @@ export default function FinalPage() {
   }
 
   const title = session.name
-    ? `${session.name}, leave with direction.`
-    : "Leave with direction.";
+    ? `${session.name}, leave with one grounded next step.`
+    : "Leave with one grounded next step.";
 
   return (
     <FlowShell
-      eyebrow="Final wise effort plan"
+      eyebrow="Grounded next step"
       title={title}
-      description="This is the final step: one grounded action, one release statement, and a reflection summary you can copy or keep."
+      description="This is the final step: turn the reflection into one realistic action plan and one clear statement about what is not fully controllable."
       step={8}
       totalSteps={8}
     >
@@ -116,17 +116,17 @@ export default function FinalPage() {
                 </p>
 
                 <div className="mt-8 space-y-4">
-                  <FinalNode number="1" label="Grounding" active />
-                  <FinalNode number="2" label="Wise effort" active />
-                  <FinalNode number="3" label="Release" active />
-                  <FinalNode number="4" label="Direction" />
+                  <FinalNode number="1" label="Pressure named" active />
+                  <FinalNode number="2" label="Outcome meaning" active />
+                  <FinalNode number="3" label="Control mapped" active />
+                  <FinalNode number="4" label="Action planned" active />
                 </div>
               </div>
             </div>
 
             <div className="p-6 md:p-8">
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">
-                Your grounding statement
+                Grounding statement
               </p>
 
               <h2 className="mt-4 text-3xl font-semibold leading-10 tracking-[-0.04em]">
@@ -134,8 +134,9 @@ export default function FinalPage() {
               </h2>
 
               <p className="mt-6 text-sm leading-7 text-white/70">
-                Material reality matters. Effort matters. Preparation matters.
-                But not every outcome is fully yours to command.
+                The point is not to stop caring. The point is to care clearly:
+                act where action helps, prepare where preparation helps, and
+                stop trying to fully control what is not fully controllable.
               </p>
             </div>
           </div>
@@ -148,12 +149,16 @@ export default function FinalPage() {
             </div>
 
             <p className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-              Wise effort action
+              Grounded next step
             </p>
 
             <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
-              What is one grounded action you can take this week?
+              What is one action you can take this week?
             </h2>
+
+            <p className="mt-3 text-sm leading-6 text-[#666]">
+              Choose something specific enough that you could actually do it.
+            </p>
 
             <textarea
               rows={6}
@@ -161,7 +166,7 @@ export default function FinalPage() {
               onChange={(event) =>
                 updateSession({ wiseEffortAction: event.target.value })
               }
-              placeholder={buildWiseEffortPlaceholder(session)}
+              placeholder={buildGroundedStepPlaceholder(session)}
               className="mt-5 w-full resize-none rounded-2xl border border-[#1f1f1f]/10 bg-[#fdfaf4] p-4 text-sm leading-6 text-[#1f1f1f] outline-none transition placeholder:text-[#9a8f80] focus:border-[#7a5c3a]"
             />
           </div>
@@ -172,12 +177,17 @@ export default function FinalPage() {
             </div>
 
             <p className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-              Release statement
+              Not fully controllable
             </p>
 
             <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
-              What can you stop treating as fully yours to control?
+              What can you stop trying to fully control?
             </h2>
+
+            <p className="mt-3 text-sm leading-6 text-[#666]">
+              Name the part of the result that cannot be forced by thinking
+              harder.
+            </p>
 
             <textarea
               rows={6}
@@ -185,7 +195,7 @@ export default function FinalPage() {
               onChange={(event) =>
                 updateSession({ releaseStatement: event.target.value })
               }
-              placeholder={buildReleasePlaceholder(session)}
+              placeholder={buildNotFullyControllablePlaceholder(session)}
               className="mt-5 w-full resize-none rounded-2xl border border-[#1f1f1f]/10 bg-[#fdfaf4] p-4 text-sm leading-6 text-[#1f1f1f] outline-none transition placeholder:text-[#9a8f80] focus:border-[#7a5c3a]"
             />
           </div>
@@ -193,18 +203,47 @@ export default function FinalPage() {
 
         <section className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-            Final direction
+            Make the action real
           </p>
 
           <h2 className="mt-3 max-w-2xl text-3xl font-semibold leading-10 tracking-[-0.04em] text-[#1f1f1f]">
-            Care about the outcome. Do not let it become the full measure of
-            your life.
+            A useful reflection should end with a next move.
           </h2>
 
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-[#555]">
-            The goal is not to stop caring. The goal is to act with direction
-            while refusing to let uncertainty own your peace, worth, or
-            identity.
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <PlanningCard
+              title="When?"
+              text="When this week could you realistically do the action?"
+            />
+
+            <PlanningCard
+              title="What might block it?"
+              text="What distraction, fear, delay, or uncertainty could get in the way?"
+            />
+
+            <PlanningCard
+              title="How will you respond?"
+              text="What will you do if the obstacle shows up?"
+            />
+          </div>
+
+          <p className="mt-5 text-sm leading-7 text-[#555]">
+            For now, include the when, obstacle, and response inside your
+            grounded next step. This keeps the final artifact simple while
+            making the plan more concrete.
+          </p>
+        </section>
+
+        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+            Why this step matters
+          </p>
+
+          <p className="mt-3 text-sm leading-7 text-[#555]">
+            A reflection becomes more useful when it ends in a specific action
+            plan. This page turns the pressure map into one grounded next step,
+            while keeping clear which parts of the outcome are not fully
+            controllable.
           </p>
         </section>
 
@@ -260,39 +299,39 @@ export default function FinalPage() {
               />
 
               <ArtifactCard
-                title="Outcome I felt attached to"
+                title="Outcome-dependent thinking"
                 content={session.attachmentText}
               />
 
               <div className="grid gap-4 md:grid-cols-2">
                 <ArtifactCard
-                  title="What I can control"
+                  title="Direct control"
                   content={session.controlMap.control}
                 />
 
                 <ArtifactCard
-                  title="What I can influence"
+                  title="Partial influence"
                   content={session.controlMap.influence}
                 />
 
                 <ArtifactCard
-                  title="What I can prepare for"
+                  title="Preparation"
                   content={session.controlMap.preparation}
                 />
 
                 <ArtifactCard
-                  title="What I need to release"
+                  title="Not fully controllable"
                   content={session.controlMap.release}
                 />
               </div>
 
               <ArtifactCard
-                title="Wise effort action"
+                title="Grounded next step"
                 content={session.wiseEffortAction}
               />
 
               <ArtifactCard
-                title="Release statement"
+                title="What I am not fully controlling"
                 content={session.releaseStatement}
               />
 
@@ -359,6 +398,16 @@ function FinalNode({
   );
 }
 
+function PlanningCard({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="rounded-3xl bg-[#f6f1e8] p-5">
+      <h3 className="font-semibold text-[#1f1f1f]">{title}</h3>
+
+      <p className="mt-2 text-sm leading-6 text-[#555]">{text}</p>
+    </div>
+  );
+}
+
 function ArtifactCard({
   title,
   content,
@@ -418,44 +467,44 @@ function buildContextSummary(session: UnderPressureSession) {
   return parts.join("\n");
 }
 
-function buildWiseEffortPlaceholder(session: UnderPressureSession) {
+function buildGroundedStepPlaceholder(session: UnderPressureSession) {
   if (session.pressureDomain === "Family expectations") {
-    return "Example: I will choose one concrete priority this week and do it well instead of trying to prove my entire future at once.";
+    return "Example: This week, I will choose one concrete priority and do it well instead of trying to prove my entire future at once. I will do it on Tuesday afternoon. If I start worrying about what people back home think, I will return to the task in front of me.";
   }
 
   if (session.pressureDomain === "School / academic performance") {
-    return "Example: I will complete two focused study blocks, review the hardest topic first, and ask for help where I am stuck.";
+    return "Example: This week, I will complete two focused study blocks, review the hardest topic first, and ask for help where I am stuck. If I avoid it, I will restart with one 25-minute block.";
   }
 
   if (session.pressureDomain === "Career / work") {
-    return "Example: I will improve my CV, apply to two roles, and ask one person for advice without treating the result as a verdict on my future.";
+    return "Example: This week, I will improve my CV, apply to two roles, and ask one person for advice. If rejection fear shows up, I will still complete the next application.";
   }
 
   if (session.pressureDomain === "Money / financial stability") {
-    return "Example: I will review my numbers, make one realistic weekly budget, and identify one action that improves my financial position.";
+    return "Example: This week, I will review my numbers, make one realistic budget, and identify one action that improves my financial position. If I feel overwhelmed, I will start with only the numbers.";
   }
 
-  return "Example: I will take one concrete action this week that improves my position without demanding certainty from the outcome.";
+  return "Example: This week, I will take one concrete action that improves my position. If uncertainty shows up, I will return to the next step instead of trying to solve the whole future.";
 }
 
-function buildReleasePlaceholder(session: UnderPressureSession) {
+function buildNotFullyControllablePlaceholder(session: UnderPressureSession) {
   if (session.pressureDomain === "Family expectations") {
-    return "Example: I release the need to perform perfectly for the image people have of me. Their expectations can matter without becoming the only measure of my worth.";
+    return "Example: I cannot fully control the image people have of me, how they interpret my path, or whether every outcome matches their expectations.";
   }
 
   if (session.pressureDomain === "School / academic performance") {
-    return "Example: I release the idea that one grade decides my intelligence, future, or worth.";
+    return "Example: I cannot fully control the exact grade, the difficulty of the exam, or what one result seems to say from the outside.";
   }
 
   if (session.pressureDomain === "Career / work") {
-    return "Example: I release the idea that one rejection, delay, or opportunity decides whether my career will work out.";
+    return "Example: I cannot fully control one rejection, one hiring decision, timing, or whether every opportunity works out exactly when I want.";
   }
 
   if (session.pressureDomain === "Money / financial stability") {
-    return "Example: I release the idea that financial uncertainty means I am unsafe, incapable, or failing as a person.";
+    return "Example: I cannot fully control every external cost, opportunity, or uncertainty. I can control how directly I face the situation.";
   }
 
-  return "Example: I release the idea that this one outcome decides my worth, my future, or whether I am falling behind in life.";
+  return "Example: I cannot fully control the final decision, timing, other people’s reactions, comparison, or whether the outcome happens exactly the way I want.";
 }
 
 function buildFinalReflection(
@@ -471,13 +520,13 @@ function buildFinalReflection(
       }`,
     ],
     ["What was weighing on me", session.pressureText],
-    ["Outcome I felt attached to", session.attachmentText],
-    ["What I can control", session.controlMap.control],
-    ["What I can influence", session.controlMap.influence],
-    ["What I can prepare for", session.controlMap.preparation],
-    ["What I need to release", session.controlMap.release],
-    ["Wise effort action", session.wiseEffortAction],
-    ["Release statement", session.releaseStatement],
+    ["Outcome-dependent thinking", session.attachmentText],
+    ["Direct control", session.controlMap.control],
+    ["Partial influence", session.controlMap.influence],
+    ["Preparation", session.controlMap.preparation],
+    ["Not fully controllable", session.controlMap.release],
+    ["Grounded next step", session.wiseEffortAction],
+    ["What I am not fully controlling", session.releaseStatement],
     ["Grounding", groundingStatement],
   ];
 
