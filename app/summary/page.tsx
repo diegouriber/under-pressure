@@ -40,7 +40,7 @@ export default function SummaryPage() {
     <FlowShell
       eyebrow="Pressure pattern summary"
       title={title}
-      description="This is not a diagnosis. It is a structured reflection based on what you wrote, your emotional check-in, and the context you gave."
+      description="This is a structured reflection based on what you wrote, your emotional check-in, and the context you gave. These are reflection patterns, not diagnoses."
       step={5}
       totalSteps={8}
     >
@@ -87,7 +87,7 @@ export default function SummaryPage() {
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-                Detected pressure patterns
+                Detected reflection patterns
               </p>
 
               <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
@@ -96,8 +96,8 @@ export default function SummaryPage() {
             </div>
 
             <p className="max-w-sm text-sm leading-6 text-[#666]">
-              These are not labels. They are clues for understanding where the
-              pressure may be coming from.
+              These are not clinical labels. They are clues for understanding
+              what kind of pressure may be active.
             </p>
           </div>
 
@@ -120,9 +120,10 @@ export default function SummaryPage() {
                 </p>
 
                 <div className="mt-8 space-y-4">
-                  <VisualLayer number="1" label="Reality" active />
-                  <VisualLayer number="2" label="Inner effect" active />
-                  <VisualLayer number="3" label="Attachment" active />
+                  <VisualLayer number="1" label="Practical stressor" active />
+                  <VisualLayer number="2" label="Interpretation" active />
+                  <VisualLayer number="3" label="Emotional effect" active />
+                  <VisualLayer number="4" label="Outcome meaning" />
                 </div>
               </div>
             </div>
@@ -154,8 +155,8 @@ export default function SummaryPage() {
             <LayerCard
               label="Layer 1"
               icon="▣"
-              title="Material reality"
-              content={analysis.materialReality}
+              title="Practical layer"
+              content={analysis.practicalLayer}
             />
 
             <LayerCard
@@ -168,8 +169,8 @@ export default function SummaryPage() {
             <LayerCard
               label="Layer 3"
               icon="◇"
-              title="Outcome attachment"
-              content={analysis.attachmentInsight}
+              title="Outcome-dependent thinking"
+              content={analysis.outcomeDependentInsight}
             />
           </div>
         </section>
@@ -192,19 +193,31 @@ export default function SummaryPage() {
           </div>
         </section>
 
+        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+            Why this step matters
+          </p>
+
+          <p className="mt-3 text-sm leading-7 text-[#555]">
+            Stress is not only shaped by what happens, but also by how we
+            interpret what happens and whether we believe we can respond. This
+            page organizes the pressure into possible patterns so the next step
+            can focus on what the outcome has started to mean.
+          </p>
+        </section>
+
         <section className="rounded-3xl bg-[#f6f1e8] p-6 md:p-8">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
             Next reflection
           </p>
 
           <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[#1f1f1f]">
-            What outcome are you attached to?
+            What result has become emotionally loaded?
           </h2>
 
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[#555]">
-            The next step is to name the result you feel you need before you are
-            allowed to feel okay. This is where pressure usually becomes
-            personal.
+            The next step is to notice whether a specific outcome has started
+            acting like proof of your worth, safety, success, or direction.
           </p>
         </section>
 
@@ -213,7 +226,7 @@ export default function SummaryPage() {
             href="/attachment"
             className="rounded-full bg-[#1f1f1f] px-7 py-4 text-center text-sm font-semibold text-white transition hover:opacity-90"
           >
-            Explore the attachment
+            Explore outcome-dependent thinking
           </Link>
 
           <Link
@@ -329,15 +342,15 @@ function buildPersonalizedMeaning(session: UnderPressureSession) {
   const style = session.guidanceStyle;
 
   if (style === "Direct and practical") {
-    return "The point is not to overanalyze the pressure. The point is to separate what needs action from what needs release. One part of this situation may require a concrete next move. Another part may be mental weight that is not helping you act.";
+    return "The point is not to overanalyze the pressure. The point is to separate what needs action from what needs to stop controlling your emotional state.";
   }
 
   if (style === "Calm and grounding") {
-    return "The point is not to force yourself into instant clarity. The point is to slow the pressure down enough to see it clearly. You can care about the outcome while still returning to the present moment and choosing one grounded next step.";
+    return "The point is not to force instant clarity. The point is to slow the pressure down enough to see what is real, what is interpretation, and what next step is actually available.";
   }
 
   if (style === "Reflective and deep") {
-    return "The point is not only to solve the surface problem. The deeper question is what this pressure has started to represent: proof, safety, belonging, success, approval, or identity. Once that is named, the pressure becomes less total.";
+    return "The point is not only to solve the surface problem. The deeper question is what this pressure has started to represent: proof, safety, belonging, success, approval, or identity.";
   }
 
   if (domain === "School / academic performance") {
@@ -353,22 +366,22 @@ function buildPersonalizedMeaning(session: UnderPressureSession) {
   }
 
   if (domain === "Family expectations") {
-    return "This may involve real family expectations, but another person’s approval cannot become the only place where your peace is allowed to exist.";
+    return "This may involve real family expectations, but another person’s approval cannot become the only place where your emotional stability is allowed to exist.";
   }
 
   if (domain === "Social comparison") {
     return "This may involve real ambition, but comparison becomes dangerous when other people’s timelines start replacing your own judgment.";
   }
 
-  return "The point is not to stop caring. The point is to care with more separation. One part of the pressure may require effort. Another part may require preparation. Another part may need to be released because it is asking you to control what no person can fully control.";
+  return "The point is not to stop caring. The point is to care with more separation: act where action helps, prepare where preparation helps, and stop trying to fully control what is not fully controllable.";
 }
 
 function getPressureCategoryMeta(category: PressureCategory) {
-  if (category === "Material reality") {
+  if (category === "Practical stressor") {
     return {
       icon: "▣",
       description:
-        "There may be a real practical issue here: money, grades, work, stability, deadlines, or responsibility.",
+        "There may be a real external issue here: school, work, money, health, relationships, deadlines, or responsibility.",
     };
   }
 
@@ -380,7 +393,7 @@ function getPressureCategoryMeta(category: PressureCategory) {
     };
   }
 
-  if (category === "Family expectations") {
+  if (category === "Family / expectation pressure") {
     return {
       icon: "⌂",
       description:
@@ -396,7 +409,7 @@ function getPressureCategoryMeta(category: PressureCategory) {
     };
   }
 
-  if (category === "Perfectionism") {
+  if (category === "Perfectionistic standards") {
     return {
       icon: "◎",
       description:
@@ -404,7 +417,7 @@ function getPressureCategoryMeta(category: PressureCategory) {
     };
   }
 
-  if (category === "External validation") {
+  if (category === "Validation seeking") {
     return {
       icon: "★",
       description:
@@ -412,11 +425,11 @@ function getPressureCategoryMeta(category: PressureCategory) {
     };
   }
 
-  if (category === "Identity pressure") {
+  if (category === "Self-worth threat") {
     return {
       icon: "◍",
       description:
-        "The situation may be starting to feel like a verdict on who you are.",
+        "The situation may be starting to feel like a verdict on your capability, value, or identity.",
     };
   }
 
@@ -428,11 +441,11 @@ function getPressureCategoryMeta(category: PressureCategory) {
     };
   }
 
-  if (category === "Burnout signs") {
+  if (category === "Depletion signs") {
     return {
       icon: "↓",
       description:
-        "The pressure may include depletion, tiredness, or the need for recovery before more effort.",
+        "The pressure may include tiredness, low energy, or the need for recovery before more effort.",
     };
   }
 

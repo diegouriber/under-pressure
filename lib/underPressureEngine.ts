@@ -1,23 +1,27 @@
 export type Mood =
-  | "Overwhelmed"
   | "Anxious"
+  | "Overwhelmed"
+  | "Tense / restless"
+  | "Numb / disconnected"
+  | "Tired / depleted"
+  | "Frustrated"
+  | "Okay, but pressured"
   | "Numb"
   | "Tired"
   | "Restless"
-  | "Okay, but pressured"
   | "";
 
 export type PressureCategory =
-  | "Material reality"
+  | "Practical stressor"
   | "Future uncertainty"
-  | "Family expectations"
+  | "Family / expectation pressure"
   | "Social comparison"
-  | "Perfectionism"
-  | "External validation"
-  | "Identity pressure"
+  | "Perfectionistic standards"
+  | "Validation seeking"
+  | "Self-worth threat"
   | "Emotional overload"
-  | "Burnout signs"
-  | "Unclear pressure";
+  | "Depletion signs"
+  | "Unclear or mixed pressure";
 
 export type ControlMap = {
   control: string;
@@ -48,12 +52,16 @@ export type UnderPressureSession = {
 export type PressureAnalysis = {
   categories: PressureCategory[];
   dominantPattern: string;
-  materialReality: string;
+  practicalLayer: string;
   innerEffect: string;
-  attachmentInsight: string;
+  outcomeDependentInsight: string;
   controlPrompt: string;
   groundingStatement: string;
   severeDistressFlag: boolean;
+
+  // Legacy aliases so older pages do not break while we update the app in batches.
+  materialReality: string;
+  attachmentInsight: string;
 };
 
 const STORAGE_KEY = "under-pressure-session-v2";
@@ -177,15 +185,15 @@ export function getMissingReflectionSteps(session: UnderPressureSession) {
   }
 
   if (session.attachmentText.trim().length < 15) {
-    missing.push("Outcome attachment");
+    missing.push("Outcome-dependent thinking");
   }
 
   if (session.controlMap.control.trim().length < 5) {
-    missing.push("What you can control");
+    missing.push("What you can directly control");
   }
 
   if (session.controlMap.release.trim().length < 5) {
-    missing.push("What you need to release");
+    missing.push("What is not fully controllable");
   }
 
   return missing;
@@ -200,9 +208,18 @@ function includesAny(text: string, words: string[]) {
   return words.some((word) => normalized.includes(word));
 }
 
+function addCategory(
+  categories: PressureCategory[],
+  category: PressureCategory
+) {
+  if (!categories.includes(category)) {
+    categories.push(category);
+  }
+}
+
 export function analyzePressure(session: UnderPressureSession): PressureAnalysis {
   const combined =
-    `${session.pressureText} ${session.attachmentText} ${session.pressureDomain}`.toLowerCase();
+    `${session.pressureText} ${session.attachmentText} ${session.pressureDomain} ${session.mood}`.toLowerCase();
 
   const categories: PressureCategory[] = [];
 
@@ -226,9 +243,14 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
       "exam",
       "academic",
       "performance",
+      "health",
+      "energy",
+      "relationship",
+      "deadline",
+      "responsibility",
     ])
   ) {
-    categories.push("Material reality");
+    addCategory(categories, "Practical stressor");
   }
 
   if (
@@ -244,9 +266,12 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
       "security",
       "falling",
       "timeline",
+      "tomorrow",
+      "next",
+      "guarantee",
     ])
   ) {
-    categories.push("Future uncertainty");
+    addCategory(categories, "Future uncertainty");
   }
 
   if (
@@ -259,9 +284,11 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
       "expectations",
       "proud",
       "pressure from home",
+      "back home",
+      "approval from family",
     ])
   ) {
-    categories.push("Family expectations");
+    addCategory(categories, "Family / expectation pressure");
   }
 
   if (
@@ -277,9 +304,10 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
       "people my age",
       "classmates",
       "social comparison",
+      "behind others",
     ])
   ) {
-    categories.push("Social comparison");
+    addCategory(categories, "Social comparison");
   }
 
   if (
@@ -292,9 +320,12 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
       "top",
       "perform",
       "performance",
+      "flawless",
+      "everything right",
+      "high standards",
     ])
   ) {
-    categories.push("Perfectionism");
+    addCategory(categories, "Perfectionistic standards");
   }
 
   if (
@@ -308,9 +339,12 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
       "chosen",
       "validated",
       "validation",
+      "admired",
+      "impress",
+      "prove to them",
     ])
   ) {
-    categories.push("External validation");
+    addCategory(categories, "Validation seeking");
   }
 
   if (
@@ -323,9 +357,13 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
       "something wrong with me",
       "prove",
       "means about me",
+      "good enough",
+      "not capable",
+      "verdict",
+      "behind in life",
     ])
   ) {
-    categories.push("Identity pressure");
+    addCategory(categories, "Self-worth threat");
   }
 
   if (
@@ -339,9 +377,12 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
       "heavy",
       "cannot think",
       "too much",
+      "restless",
+      "tense",
+      "frustrated",
     ])
   ) {
-    categories.push("Emotional overload");
+    addCategory(categories, "Emotional overload");
   }
 
   if (
@@ -353,10 +394,12 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
       "drained",
       "empty",
       "no energy",
+      "depleted",
       "can't keep going",
+      "cant keep going",
     ])
   ) {
-    categories.push("Burnout signs");
+    addCategory(categories, "Depletion signs");
   }
 
   const severeDistressFlag = includesAny(combined, [
@@ -373,18 +416,27 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
   ]);
 
   if (categories.length === 0) {
-    categories.push("Unclear pressure");
+    categories.push("Unclear or mixed pressure");
   }
+
+  const practicalLayer = buildPracticalLayer(categories, session);
+  const outcomeDependentInsight = buildOutcomeDependentInsight(
+    categories,
+    session
+  );
 
   return {
     categories,
     dominantPattern: buildDominantPattern(categories, session),
-    materialReality: buildMaterialReality(categories, session),
+    practicalLayer,
     innerEffect: buildInnerEffect(categories, session),
-    attachmentInsight: buildAttachmentInsight(categories, session),
+    outcomeDependentInsight,
     controlPrompt: buildControlPrompt(categories, session),
     groundingStatement: buildGroundingStatement(categories, session),
     severeDistressFlag,
+
+    materialReality: practicalLayer,
+    attachmentInsight: outcomeDependentInsight,
   };
 }
 
@@ -398,38 +450,38 @@ function buildDominantPattern(
     : "";
 
   if (
-    categories.includes("Material reality") &&
-    categories.includes("Identity pressure")
+    categories.includes("Practical stressor") &&
+    categories.includes("Self-worth threat")
   ) {
-    return `${name}${lifeStage}your pressure seems to be moving from a real external concern into a question of personal worth. The situation may need action, but the emotional weight is coming from what the outcome appears to say about you.`;
+    return `${name}${lifeStage}the pressure seems to have two layers: a real practical demand, and a deeper fear about what the outcome might say about you. The situation may need action, but the emotional weight seems to come from treating the result like a verdict.`;
   }
 
   if (
     categories.includes("Social comparison") &&
     categories.includes("Future uncertainty")
   ) {
-    return `${name}${lifeStage}your pressure seems connected to comparison and future uncertainty. It may feel like other people are moving faster, and that their movement proves something about your own timeline.`;
+    return `${name}${lifeStage}the pressure seems connected to comparison and uncertainty. Other people’s timelines may be making your own path feel delayed, even if your next step still has room to unfold.`;
   }
 
   if (
-    categories.includes("Family expectations") &&
-    categories.includes("External validation")
+    categories.includes("Family / expectation pressure") &&
+    categories.includes("Validation seeking")
   ) {
-    return `${name}${lifeStage}your pressure seems tied to being seen as successful or acceptable by others. The external expectation may have become an internal demand.`;
+    return `${name}${lifeStage}the pressure seems tied to being seen as successful, capable, or acceptable by people whose opinion matters to you. The external expectation may have become an internal demand.`;
   }
 
-  if (categories.includes("Burnout signs")) {
-    return `${name}${lifeStage}your pressure may not only be psychological. There are signs of depletion. The next step should include recovery, not just more effort.`;
+  if (categories.includes("Depletion signs")) {
+    return `${name}${lifeStage}the pressure may not only be about motivation. There are signs of depletion, which means the next step should include recovery and pacing, not just more effort.`;
   }
 
   if (session.intensity === "5") {
-    return `${name}the pressure feels very intense right now. Before solving anything, the first task is to slow the spiral and make the pressure more specific.`;
+    return `${name}the pressure feels very heavy right now. Before solving the whole situation, the first task is to make the pressure more specific and separate what is happening from what it seems to mean.`;
   }
 
-  return `${name}${lifeStage}your pressure appears to be layered. One part may be practical, one part emotional, and one part connected to what you fear the situation means about your future or identity.`;
+  return `${name}${lifeStage}the pressure appears to be layered. One part may be practical, one part emotional, and one part connected to the meaning you are attaching to the outcome.`;
 }
 
-function buildMaterialReality(
+function buildPracticalLayer(
   categories: PressureCategory[],
   session: UnderPressureSession
 ) {
@@ -437,12 +489,12 @@ function buildMaterialReality(
     ? `Your selected pressure domain is ${session.pressureDomain.toLowerCase()}. `
     : "";
 
-  if (categories.includes("Material reality")) {
-    return `${domain}There is a practical layer here. Money, work, housing, grades, or career stability may require planning. Under Pressure does not ask you to ignore this. It asks you to face it clearly without letting it become the whole measure of your life.`;
+  if (categories.includes("Practical stressor")) {
+    return `${domain}There is a practical layer here: school, work, money, health, relationships, deadlines, or responsibility may require real action. The goal is not to ignore that reality. The goal is to face it clearly without turning it into a full verdict on your future or worth.`;
   }
 
   if (categories.includes("Future uncertainty")) {
-    return `${domain}The material issue may not be immediate collapse, but uncertainty about what could happen later. That uncertainty deserves preparation, but it does not need to be treated as proof that the worst outcome is already happening.`;
+    return `${domain}The practical issue may not be immediate collapse, but uncertainty about what could happen later. That uncertainty deserves preparation, but it does not need to be treated as proof that the worst outcome is already happening.`;
   }
 
   return `${domain}The practical layer is not fully clear yet. That does not make the pressure fake. It means the first task is to separate facts from fears.`;
@@ -452,65 +504,69 @@ function buildInnerEffect(
   categories: PressureCategory[],
   session: UnderPressureSession
 ) {
-  if (categories.includes("Identity pressure")) {
-    return "The outside pressure seems to be entering the inner self as a verdict: if this does not work out, it may feel like something is wrong with you. That is where the pressure becomes dangerous.";
+  if (categories.includes("Self-worth threat")) {
+    return "The pressure seems to be entering the inner self as a verdict. If this does not work out, it may feel like it means something painful about your capability, future, or value. That is where pressure becomes heavier than the original problem.";
   }
 
   if (categories.includes("Social comparison")) {
-    return "The outside pressure seems to be entering through comparison. Other people’s timelines may be making your own life feel delayed, even if your path still has room to unfold.";
+    return "The pressure seems to be entering through comparison. Other people’s timelines may be making your own life feel delayed, even if their path is not the correct measure of yours.";
   }
 
-  if (categories.includes("Perfectionism")) {
-    return "The outside pressure seems to be entering as perfectionism. Instead of asking what is good enough for the next step, the mind may be demanding a flawless performance.";
+  if (categories.includes("Perfectionistic standards")) {
+    return "The pressure seems to be entering as a demand for a flawless result. Instead of asking what is good enough for the next step, the mind may be demanding proof that nothing can go wrong.";
   }
 
-  if (session.mood === "Numb") {
-    return "The pressure may have become so constant that your system is protecting itself by going numb. Numbness is not laziness. It can be a sign that too much has been carried without enough processing.";
+  if (session.mood === "Numb / disconnected" || session.mood === "Numb") {
+    return "The pressure may have become so constant that your system is protecting itself by going distant or numb. That does not mean you do not care. It can mean you have been carrying too much without enough space to process it.";
   }
 
   if (session.guidanceStyle === "Calm and grounding") {
-    return "The outside pressure seems to be affecting your inner self by making uncertainty feel bigger than the present moment. The task is to return to what is real, name what can be acted on, and stop treating every unknown as an emergency.";
+    return "The pressure seems to be making uncertainty feel bigger than the present moment. The task is to return to what is real, name what can be acted on, and stop treating every unknown as an emergency.";
   }
 
-  return "The outside pressure seems to be affecting your inner self by making uncertainty feel personal. The situation is not only asking for action; it is asking for emotional separation.";
+  return "The pressure seems to be affecting your inner state by making uncertainty feel personal. The situation is not only asking for action; it is asking for emotional separation from the meaning attached to it.";
 }
 
-function buildAttachmentInsight(
+function buildOutcomeDependentInsight(
   categories: PressureCategory[],
   session: UnderPressureSession
 ) {
   if (!session.attachmentText.trim()) {
-    return "The attachment is not named yet. The next question is: what outcome do you feel must happen before you are allowed to feel okay?";
+    return "The outcome-dependent layer is not named yet. The next question is: what result do you feel needs to happen before you are allowed to feel okay?";
   }
 
-  if (categories.includes("External validation")) {
-    return "You may not only want the outcome. You may want the recognition, respect, or validation that you believe the outcome would give you.";
+  if (categories.includes("Validation seeking")) {
+    return "You may not only want the outcome itself. You may want the recognition, respect, or approval that you believe the outcome would give you.";
   }
 
   if (categories.includes("Future uncertainty")) {
     return "The attachment may be to certainty itself: the need to know that things will work out before you allow yourself to breathe.";
   }
 
-  if (categories.includes("Family expectations")) {
-    return "The attachment may involve being acceptable in the eyes of family or people whose opinion carries emotional weight.";
+  if (categories.includes("Family / expectation pressure")) {
+    return "The outcome may feel tied to being acceptable in the eyes of family or people whose opinion carries emotional weight.";
+  }
+
+  if (categories.includes("Self-worth threat")) {
+    return "The outcome seems emotionally loaded because it may feel connected to self-worth. The result can matter without becoming the only proof that you are capable, valuable, or on track.";
   }
 
   if (session.guidanceStyle === "Direct and practical") {
-    return "The practical point is this: the result matters, but your peace cannot be completely outsourced to whether the result happens exactly the way you want.";
+    return "The practical point is this: the result matters, but your emotional state cannot be completely outsourced to whether the result happens exactly the way you want.";
   }
 
   if (session.guidanceStyle === "Reflective and deep") {
     return "The attachment is probably not just to the result itself. It may be attached to a deeper need for proof, safety, belonging, recognition, or permission to feel enough.";
   }
 
-  return "The attachment is probably not just to the result. It is to what the result represents: security, proof, belonging, status, relief, or permission to feel okay.";
+  return "The attachment is probably not only to the result. It is to what the result represents: security, proof, belonging, status, relief, or permission to feel okay.";
 }
 
 function buildControlPrompt(
   categories: PressureCategory[],
   session: UnderPressureSession
 ) {
-  if (categories.includes("Material reality")) {
+  if (categories.includes("Practical stressor")) {
     return "Start with the practical layer. What is one concrete action that improves your position, even if it does not guarantee the final outcome?";
   }
 
@@ -518,22 +574,22 @@ function buildControlPrompt(
     return "Separate your path from other people’s timelines. What action belongs to your life, not to the race you are imagining?";
   }
 
-  if (categories.includes("Burnout signs")) {
+  if (categories.includes("Depletion signs")) {
     return "Include recovery as a responsible action. What would help you regain enough energy to act wisely?";
   }
 
   if (session.guidanceStyle === "Direct and practical") {
-    return "Name the next move. One action you control, one thing you can influence, one thing to prepare for, and one thing to stop carrying.";
+    return "Name the next move. One action you control, one thing you can influence, one thing to prepare for, and one thing to stop trying to fully control.";
   }
 
-  return "Name one action within your control, one thing you can influence, one thing to prepare for, and one thing to release.";
+  return "Name one action within your control, one thing you can influence, one thing to prepare for, and one thing that is not fully controllable.";
 }
 
 function buildGroundingStatement(
   categories: PressureCategory[],
   session: UnderPressureSession
 ) {
-  if (categories.includes("Identity pressure")) {
+  if (categories.includes("Self-worth threat")) {
     return "This outcome can matter without becoming the full verdict on who I am.";
   }
 
@@ -541,8 +597,8 @@ function buildGroundingStatement(
     return "Other people’s timelines are information, not instructions for my life.";
   }
 
-  if (categories.includes("Material reality")) {
-    return "I can take material reality seriously without surrendering my peace completely to uncertain outcomes.";
+  if (categories.includes("Practical stressor")) {
+    return "I can take the practical reality seriously without surrendering my whole emotional state to an uncertain outcome.";
   }
 
   if (session.mood === "Overwhelmed") {
