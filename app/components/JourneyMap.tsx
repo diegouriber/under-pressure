@@ -1,133 +1,136 @@
-type JourneyMapProps = {
-  currentStep?: number;
-  totalSteps?: number;
-};
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const journeySteps = [
   {
-    number: 1,
     label: "Scope",
+    href: "/scope",
     description: "Set boundaries",
   },
   {
-    number: 2,
     label: "Context",
-    description: "Make it relevant",
+    href: "/context",
+    description: "Name the situation",
   },
   {
-    number: 3,
     label: "Check-in",
+    href: "/check-in",
     description: "Name the state",
   },
   {
-    number: 4,
     label: "Pressure",
+    href: "/pressure",
     description: "Facts and fear",
   },
   {
-    number: 5,
     label: "Pattern",
+    href: "/summary",
     description: "Notice themes",
   },
   {
-    number: 6,
     label: "Outcome meaning",
+    href: "/attachment",
     description: "What it represents",
   },
   {
-    number: 7,
     label: "Control map",
+    href: "/control-map",
     description: "Sort the pressure",
   },
   {
-    number: 8,
     label: "Action",
+    href: "/final",
     description: "Choose next step",
   },
 ];
 
-export default function JourneyMap({
-  currentStep = 1,
-  totalSteps = 8,
-}: JourneyMapProps) {
-  const safeStep = Math.min(Math.max(currentStep, 1), totalSteps);
+export default function JourneyMap() {
+  const pathname = usePathname();
+  const activeIndex = journeySteps.findIndex((step) => step.href === pathname);
+  const safeActiveIndex = activeIndex === -1 ? 0 : activeIndex;
+  const progress = Math.round(((safeActiveIndex + 1) / journeySteps.length) * 100);
 
   return (
-    <div className="rounded-[2rem] border border-white/10 bg-white/[0.06] p-4 backdrop-blur">
-      <div className="mb-4 flex items-center justify-between gap-3">
+    <aside className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-5 text-[#1f1f1f] shadow-sm">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/45">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a5c3a]">
             Journey map
           </p>
 
-          <p className="mt-1 text-sm text-white/70">
-            Step {safeStep} of {totalSteps}
+          <p className="mt-2 text-sm font-semibold text-[#1f1f1f]">
+            Step {safeActiveIndex + 1} of {journeySteps.length}
           </p>
         </div>
 
-        <div className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/70">
-          {Math.round((safeStep / totalSteps) * 100)}%
-        </div>
+        <p className="text-xs font-semibold text-[#7a5c3a]">{progress}%</p>
       </div>
 
-      <div className="space-y-3">
-        {journeySteps.map((step) => {
-          const isComplete = step.number < safeStep;
-          const isCurrent = step.number === safeStep;
+      <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#efe4d4]">
+        <div
+          className="h-full rounded-full bg-[#1f1f1f] transition-all"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <nav className="mt-6 space-y-2">
+        {journeySteps.map((step, index) => {
+          const isActive = index === safeActiveIndex;
+          const isComplete = index < safeActiveIndex;
 
           return (
-            <div key={step.number} className="flex items-start gap-3">
-              <div className="flex flex-col items-center">
-                <div
-                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition ${
-                    isCurrent
-                      ? "bg-[#e7c987] text-[#1f1f1f]"
-                      : isComplete
-                      ? "bg-white text-[#1f1f1f]"
-                      : "bg-white/15 text-white/45"
-                  }`}
-                >
-                  {isComplete ? "✓" : step.number}
-                </div>
-
-                {step.number !== journeySteps.length && (
-                  <div
-                    className={`mt-2 h-5 w-px ${
-                      isComplete ? "bg-white/55" : "bg-white/15"
-                    }`}
-                  />
-                )}
+            <Link
+              key={step.href}
+              href={step.href}
+              className={`grid grid-cols-[auto_1fr] gap-3 rounded-2xl p-3 transition ${
+                isActive
+                  ? "bg-[#f6f1e8]"
+                  : isComplete
+                  ? "bg-white hover:bg-[#f6f1e8]"
+                  : "bg-white hover:bg-[#f6f1e8]"
+              }`}
+            >
+              <div
+                className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${
+                  isActive
+                    ? "bg-[#e7c873] text-[#1f1f1f]"
+                    : isComplete
+                    ? "bg-[#1f1f1f] text-white"
+                    : "bg-[#f6f1e8] text-[#7a5c3a]"
+                }`}
+              >
+                {isComplete ? "✓" : index + 1}
               </div>
 
-              <div className="min-w-0 pb-1">
+              <div>
                 <p
                   className={`text-sm font-semibold ${
-                    isCurrent
-                      ? "text-white"
-                      : isComplete
-                      ? "text-white/80"
-                      : "text-white/40"
+                    isActive ? "text-[#1f1f1f]" : "text-[#3f3f3f]"
                   }`}
                 >
                   {step.label}
                 </p>
 
-                <p
-                  className={`mt-1 text-xs leading-5 ${
-                    isCurrent
-                      ? "text-white/65"
-                      : isComplete
-                      ? "text-white/45"
-                      : "text-white/30"
-                  }`}
-                >
+                <p className="mt-1 text-xs leading-5 text-[#777]">
                   {step.description}
                 </p>
               </div>
-            </div>
+            </Link>
           );
         })}
+      </nav>
+
+      <div className="mt-6 rounded-2xl bg-[#fdfaf4] p-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+          Reminder
+        </p>
+
+        <p className="mt-2 text-sm leading-6 text-[#555]">
+          Reflection, not therapy. The goal is clarity, not perfection.
+        </p>
       </div>
-    </div>
+    </aside>
   );
 }
