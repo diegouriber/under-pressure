@@ -53,7 +53,7 @@ export default function ScopePage() {
 
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">
             <a
-              href="/check-in"
+              href="/name"
               className="rounded-full bg-[#1f1f1f] px-7 py-4 text-center text-sm font-semibold text-white transition hover:opacity-90"
             >
               I understand, continue

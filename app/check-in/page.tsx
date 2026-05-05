@@ -56,7 +56,11 @@ export default function CheckInPage() {
     <FlowShell
       step={2}
       eyebrow="Emotional check-in"
-      title="Before naming the pressure, notice where you are."
+      title={
+      session.name
+        ? `${session.name}, before naming the pressure, notice where you are.`
+        : "Before naming the pressure, notice where you are."
+      }
       description="This is not about judging your emotional state. It is about slowing down enough to see it clearly."
     >
       <div className="mt-10">
@@ -132,8 +136,9 @@ export default function CheckInPage() {
         </p>
 
         <p className="mt-3 text-sm leading-6 text-[#555]">
-          This does not define you. It only gives us the starting point for the
-          reflection.
+          {session.name
+            ? `${session.name}, this does not define you. It only gives us the starting point for the reflection.`
+            : "This does not define you. It only gives us the starting point for the reflection."}
         </p>
       </div>
 
