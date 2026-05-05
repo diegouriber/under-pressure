@@ -190,12 +190,12 @@ export default function SummaryPage() {
         </section>
 
         <div className="flex flex-col gap-4 sm:flex-row">
-          <Link
+          <a
             href="/attachment"
             className="rounded-full bg-[#1f1f1f] px-7 py-4 text-center text-sm font-semibold text-white transition hover:opacity-90"
           >
             Explore outcome-dependent thinking
-          </Link>
+          </a>
 
           <Link
             href="/pressure"
