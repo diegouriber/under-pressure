@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import FlowShell from "../components/FlowShell";
 import {
   analyzePressure,
   clearSession,
+  getGroundedNextStep,
   getMissingReflectionSteps,
+  getNotFullyControllableText,
+  getOutcomeDependentText,
   loadSession,
   saveSession,
   type UnderPressureSession,
@@ -20,7 +23,12 @@ export default function FinalPage() {
     setSession(loadSession());
   }, []);
 
-  if (!session) {
+  const analysis = useMemo(() => {
+    if (!session) return null;
+    return analyzePressure(session);
+  }, [session]);
+
+  if (!session || !analysis) {
     return (
       <main className="min-h-screen bg-[#fdfaf4] px-6 py-10 text-[#1f1f1f]">
         <div className="mx-auto max-w-3xl rounded-3xl bg-white p-8 shadow-sm">
@@ -30,59 +38,85 @@ export default function FinalPage() {
     );
   }
 
-  const analysis = analyzePressure(session);
   const missingSteps = getMissingReflectionSteps(session);
-  const finalReflection = buildFinalReflection(
-    session,
-    analysis.groundingStatement
-  );
+  const hasMissingSteps = missingSteps.length > 0;
 
-  function updateSession(updates: Partial<UnderPressureSession>) {
+  const groundedNextStep = getGroundedNextStep(session);
+  const notFullyControllableText = getNotFullyControllableText(session);
+  const outcomeDependentText = getOutcomeDependentText(session);
+
+  const artifact = buildReflectionArtifact({
+    session,
+    analysis,
+    groundedNextStep,
+    notFullyControllableText,
+    outcomeDependentText,
+  });
+
+  function updateGroundedNextStep(value: string) {
     if (!session) return;
 
-    const nextSession = {
+    const nextSession: UnderPressureSession = {
       ...session,
-      ...updates,
+      groundedNextStep: value,
+      wiseEffortAction: value,
     };
 
     setSession(nextSession);
     saveSession(nextSession);
   }
 
-  async function copyReflection() {
-    await navigator.clipboard.writeText(finalReflection);
-    setCopied(true);
+  function updateNotFullyControllableStatement(value: string) {
+    if (!session) return;
 
-    setTimeout(() => {
-      setCopied(false);
-    }, 2000);
+    const nextSession: UnderPressureSession = {
+      ...session,
+      notFullyControllableStatement: value,
+      releaseStatement: value,
+    };
+
+    setSession(nextSession);
+    saveSession(nextSession);
   }
 
-  function resetReflection() {
+  async function copyArtifact() {
+    try {
+      await navigator.clipboard.writeText(artifact);
+      setCopied(true);
+
+      window.setTimeout(() => {
+        setCopied(false);
+      }, 1800);
+    } catch {
+      setCopied(false);
+    }
+  }
+
+  function startNewReflection() {
     clearSession();
     window.location.assign("/");
   }
 
   const title = session.name
-    ? `${session.name}, leave with one grounded next step.`
-    : "Leave with one grounded next step.";
+    ? `${session.name}, the pressure has more shape now.`
+    : "The pressure has more shape now.";
 
   return (
     <FlowShell
       eyebrow="Grounded next step"
       title={title}
-      description="This is the final step: turn the reflection into one realistic action plan and one clear statement about what is not fully controllable."
+      description="This is the landing point of the reflection. You do not need to solve your whole life right now. The goal is to leave with one honest next move and a clearer boundary around what is not fully controllable."
       step={8}
       totalSteps={8}
     >
       <div className="space-y-8">
-        {missingSteps.length > 0 && (
-          <section className="rounded-3xl border border-[#b54747]/20 bg-[#fff6f4] p-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#b54747]">
-              ⚠️ Incomplete reflection
+        {hasMissingSteps && (
+          <section className="rounded-3xl border border-[#c28a2e]/20 bg-[#fff8ec] p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#9a6420]">
+              Incomplete reflection
             </p>
 
-            <h2 className="mt-3 text-2xl font-semibold text-[#1f1f1f]">
+            <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
               A few earlier sections are still missing.
             </h2>
 
@@ -91,269 +125,141 @@ export default function FinalPage() {
               these parts are completed:
             </p>
 
-            <div className="mt-4 flex flex-wrap gap-2">
+            <ul className="mt-4 space-y-2 text-sm leading-6 text-[#555]">
               {missingSteps.map((step) => (
-                <span
-                  key={step}
-                  className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#b54747]"
-                >
-                  {step}
-                </span>
+                <li key={step}>- {step}</li>
               ))}
-            </div>
+            </ul>
           </section>
         )}
 
-        <section className="overflow-hidden rounded-[2rem] bg-[#1f1f1f] text-white shadow-sm">
-          <div className="grid gap-0 md:grid-cols-[0.9fr_1.1fr]">
-            <div className="relative min-h-[280px] bg-[#151515] p-6 md:p-8">
-              <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10" />
-              <div className="absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-[#c9a66b]/20" />
+        <section className="rounded-[2rem] bg-[#1f1f1f] p-6 text-white shadow-sm md:p-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">
+            Grounding statement
+          </p>
 
-              <div className="relative z-10">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">
-                  Final artifact
-                </p>
+          <h2 className="mt-4 max-w-3xl text-3xl font-semibold leading-[1.2] tracking-[-0.04em] md:text-4xl">
+            {analysis.groundingStatement}
+          </h2>
 
-                <div className="mt-8 space-y-4">
-                  <FinalNode number="1" label="Pressure named" active />
-                  <FinalNode number="2" label="Outcome meaning" active />
-                  <FinalNode number="3" label="Control mapped" active />
-                  <FinalNode number="4" label="Action planned" active />
-                </div>
-              </div>
-            </div>
+          <p className="mt-5 max-w-2xl text-sm leading-7 text-white/70">
+            This is not meant to erase the pressure. It is meant to give your
+            mind one sentence to return to when the pressure starts becoming
+            bigger than the present moment.
+          </p>
+        </section>
 
-            <div className="p-6 md:p-8">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">
-                Grounding statement
-              </p>
+        <section className="grid gap-5 md:grid-cols-3">
+          <LandingCard
+            label="What became clearer"
+            title="The pressure has layers."
+            text="Some of this is practical. Some of it is emotional. Some of it is connected to what the outcome has started to represent."
+          />
 
-              <h2 className="mt-4 text-3xl font-semibold leading-10 tracking-[-0.04em]">
-                {analysis.groundingStatement}
-              </h2>
+          <LandingCard
+            label="What is yours"
+            title="Your next move can be smaller."
+            text="You do not need to prove your whole future. You need one action that belongs to this week, this situation, and your actual control."
+          />
 
-              <p className="mt-6 text-sm leading-7 text-white/70">
-                The point is not to stop caring. The point is to care clearly:
-                act where action helps, prepare where preparation helps, and
-                stop trying to fully control what is not fully controllable.
-              </p>
-            </div>
+          <LandingCard
+            label="What is not yours"
+            title="Not everything is fully controllable."
+            text="You can act responsibly without trying to control every interpretation, outcome, timeline, or image other people hold of you."
+          />
+        </section>
+
+        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+            Before you write
+          </p>
+
+          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[#1f1f1f]">
+            A useful reflection should end with a next move.
+          </h2>
+
+          <p className="mt-4 max-w-3xl text-sm leading-7 text-[#555]">
+            The next move should be concrete enough that you would know whether
+            you did it. Try to include what you will do, when you will do it,
+            what might pull you off course, and how you will return to the task
+            in front of you.
+          </p>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-4">
+            <MiniPrompt title="Action" text="What is one concrete thing?" />
+            <MiniPrompt title="Time" text="When will you do it?" />
+            <MiniPrompt title="Obstacle" text="What might get in the way?" />
+            <MiniPrompt title="Return" text="What will you come back to?" />
           </div>
         </section>
 
-        <section className="grid gap-5 md:grid-cols-2">
+        <section className="grid gap-5 lg:grid-cols-2">
           <div className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f6f1e8] text-xl text-[#1f1f1f]">
-              ▣
-            </div>
-
-            <p className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+            <label className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
               Grounded next step
-            </p>
+            </label>
 
             <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
-              What is one action you can take this week?
+              What is one honest action you can take next?
             </h2>
 
-            <p className="mt-3 text-sm leading-6 text-[#666]">
-              Choose something specific enough that you could actually do it.
-            </p>
-
             <textarea
-              rows={6}
-              value={session.wiseEffortAction}
-              onChange={(event) =>
-                updateSession({ wiseEffortAction: event.target.value })
-              }
-              placeholder={buildGroundedStepPlaceholder(session)}
-              className="mt-5 w-full resize-none rounded-2xl border border-[#1f1f1f]/10 bg-[#fdfaf4] p-4 text-sm leading-6 text-[#1f1f1f] outline-none transition placeholder:text-[#9a8f80] focus:border-[#7a5c3a]"
+              rows={8}
+              value={groundedNextStep}
+              onChange={(event) => updateGroundedNextStep(event.target.value)}
+              placeholder="Example: This week, I will choose one concrete academic priority and do it well instead of trying to prove my entire future at once. I will work on it on Tuesday afternoon. If I start worrying about what people back home think, I will return to the task in front of me."
+              className="mt-6 w-full resize-none rounded-3xl border border-[#1f1f1f]/10 bg-[#fdfaf4] p-5 text-base leading-7 text-[#1f1f1f] outline-none transition placeholder:text-[#9a8f80] focus:border-[#7a5c3a]"
             />
           </div>
 
           <div className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f6f1e8] text-xl text-[#1f1f1f]">
-              ↓
-            </div>
-
-            <p className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+            <label className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
               Not fully controllable
-            </p>
+            </label>
 
             <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
               What can you stop trying to fully control?
             </h2>
 
-            <p className="mt-3 text-sm leading-6 text-[#666]">
-              Name the part of the result that cannot be forced by thinking
-              harder.
-            </p>
-
             <textarea
-              rows={6}
-              value={session.releaseStatement}
+              rows={8}
+              value={notFullyControllableText}
               onChange={(event) =>
-                updateSession({ releaseStatement: event.target.value })
+                updateNotFullyControllableStatement(event.target.value)
               }
-              placeholder={buildNotFullyControllablePlaceholder(session)}
-              className="mt-5 w-full resize-none rounded-2xl border border-[#1f1f1f]/10 bg-[#fdfaf4] p-4 text-sm leading-6 text-[#1f1f1f] outline-none transition placeholder:text-[#9a8f80] focus:border-[#7a5c3a]"
+              placeholder="Example: I cannot fully control whether people see my path exactly the way I want them to. I can care about my family and my future without treating their expectations as the only measure of my worth."
+              className="mt-6 w-full resize-none rounded-3xl border border-[#1f1f1f]/10 bg-[#fdfaf4] p-5 text-base leading-7 text-[#1f1f1f] outline-none transition placeholder:text-[#9a8f80] focus:border-[#7a5c3a]"
             />
           </div>
         </section>
 
         <section className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-            Make the action real
-          </p>
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+                Reflection artifact
+              </p>
 
-          <h2 className="mt-3 max-w-2xl text-3xl font-semibold leading-10 tracking-[-0.04em] text-[#1f1f1f]">
-            A useful reflection should end with a next move.
-          </h2>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            <PlanningCard
-              title="When?"
-              text="When this week could you realistically do the action?"
-            />
-
-            <PlanningCard
-              title="What might block it?"
-              text="What distraction, fear, delay, or uncertainty could get in the way?"
-            />
-
-            <PlanningCard
-              title="How will you respond?"
-              text="What will you do if the obstacle shows up?"
-            />
-          </div>
-
-          <p className="mt-5 text-sm leading-7 text-[#555]">
-            For now, include the when, obstacle, and response inside your
-            grounded next step. This keeps the final artifact simple while
-            making the plan more concrete.
-          </p>
-        </section>
-
-        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-            Why this step matters
-          </p>
-
-          <p className="mt-3 text-sm leading-7 text-[#555]">
-            A reflection becomes more useful when it ends in a specific action
-            plan. This page turns the pressure map into one grounded next step,
-            while keeping clear which parts of the outcome are not fully
-            controllable.
-          </p>
-        </section>
-
-        <section className="overflow-hidden rounded-[2rem] border border-[#1f1f1f]/10 bg-white shadow-sm">
-          <div className="border-b border-[#1f1f1f]/10 bg-[#f6f1e8] p-6 md:p-8">
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-                  Reflection artifact
-                </p>
-
-                <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[#1f1f1f]">
-                  Your pressure map summary
-                </h2>
-              </div>
-
-              <button
-                type="button"
-                onClick={copyReflection}
-                className="rounded-full bg-[#1f1f1f] px-6 py-3 text-center text-sm font-semibold text-white transition hover:opacity-90"
-              >
-                {copied ? "Copied reflection" : "Copy reflection"}
-              </button>
+              <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[#1f1f1f]">
+                Your pressure map
+              </h2>
             </div>
+
+            <button
+              type="button"
+              onClick={copyArtifact}
+              className="rounded-full bg-[#1f1f1f] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+            >
+              {copied ? "Copied" : "Copy reflection"}
+            </button>
           </div>
 
-          <div className="p-6 md:p-8">
-            <div className="grid gap-4">
-              <ArtifactCard
-                title="Context"
-                content={buildContextSummary(session)}
-                alwaysShow
-              />
-
-              <ArtifactCard
-                title="Current emotional state"
-                content={`${session.mood || "Not selected"} · Intensity ${
-                  session.intensity || "not selected"
-                }`}
-                alwaysShow
-              />
-
-              <ArtifactCard
-                title="Detected pressure pattern"
-                content={analysis.dominantPattern}
-                alwaysShow
-                featured
-              />
-
-              <ArtifactCard
-                title="What was weighing on me"
-                content={session.pressureText}
-              />
-
-              <ArtifactCard
-                title="Outcome-dependent thinking"
-                content={session.attachmentText}
-              />
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <ArtifactCard
-                  title="Direct control"
-                  content={session.controlMap.control}
-                />
-
-                <ArtifactCard
-                  title="Partial influence"
-                  content={session.controlMap.influence}
-                />
-
-                <ArtifactCard
-                  title="Preparation"
-                  content={session.controlMap.preparation}
-                />
-
-                <ArtifactCard
-                  title="Not fully controllable"
-                  content={session.controlMap.release}
-                />
-              </div>
-
-              <ArtifactCard
-                title="Grounded next step"
-                content={session.wiseEffortAction}
-              />
-
-              <ArtifactCard
-                title="What I am not fully controlling"
-                content={session.releaseStatement}
-              />
-
-              <ArtifactCard
-                title="Grounding"
-                content={analysis.groundingStatement}
-                alwaysShow
-                featured
-              />
-            </div>
-          </div>
+          <pre className="mt-6 max-h-[520px] overflow-auto whitespace-pre-wrap rounded-3xl bg-[#fdfaf4] p-5 text-sm leading-7 text-[#444]">
+            {artifact}
+          </pre>
         </section>
 
-        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
-          <button
-            type="button"
-            onClick={copyReflection}
-            className="rounded-full bg-[#1f1f1f] px-7 py-4 text-center text-sm font-semibold text-white transition hover:opacity-90"
-          >
-            {copied ? "Copied reflection" : "Copy reflection"}
-          </button>
-
+        <div className="flex flex-col gap-4 sm:flex-row">
           <Link
             href="/control-map"
             className="rounded-full border border-[#1f1f1f]/20 px-7 py-4 text-center text-sm font-semibold text-[#1f1f1f] transition hover:bg-[#f6f1e8]"
@@ -363,10 +269,10 @@ export default function FinalPage() {
 
           <button
             type="button"
-            onClick={resetReflection}
-            className="rounded-full border border-[#b54747]/20 px-7 py-4 text-center text-sm font-semibold text-[#b54747] transition hover:bg-[#fff6f4]"
+            onClick={startNewReflection}
+            className="rounded-full bg-[#f6f1e8] px-7 py-4 text-center text-sm font-semibold text-[#1f1f1f] transition hover:bg-[#efe4d4]"
           >
-            Start new reflection
+            Start a new reflection
           </button>
         </div>
       </div>
@@ -374,164 +280,100 @@ export default function FinalPage() {
   );
 }
 
-function FinalNode({
-  number,
+function LandingCard({
   label,
-  active,
-}: {
-  number: string;
-  label: string;
-  active?: boolean;
-}) {
-  return (
-    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] p-3">
-      <div
-        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
-          active ? "bg-[#e7c987] text-[#1f1f1f]" : "bg-white/15 text-white"
-        }`}
-      >
-        {number}
-      </div>
-
-      <p className="text-sm font-medium text-white/80">{label}</p>
-    </div>
-  );
-}
-
-function PlanningCard({ title, text }: { title: string; text: string }) {
-  return (
-    <div className="rounded-3xl bg-[#f6f1e8] p-5">
-      <h3 className="font-semibold text-[#1f1f1f]">{title}</h3>
-
-      <p className="mt-2 text-sm leading-6 text-[#555]">{text}</p>
-    </div>
-  );
-}
-
-function ArtifactCard({
   title,
-  content,
-  alwaysShow = false,
-  featured = false,
+  text,
 }: {
+  label: string;
   title: string;
-  content?: string;
-  alwaysShow?: boolean;
-  featured?: boolean;
+  text: string;
 }) {
-  const cleanContent = content?.trim();
-
-  if (!alwaysShow && !cleanContent) return null;
-
   return (
-    <div
-      className={`rounded-3xl border p-6 ${
-        featured
-          ? "border-[#1f1f1f]/10 bg-[#1f1f1f] text-white"
-          : "border-[#1f1f1f]/10 bg-[#fdfaf4] text-[#1f1f1f]"
-      }`}
-    >
-      <p
-        className={`text-xs font-semibold uppercase tracking-[0.18em] ${
-          featured ? "text-white/45" : "text-[#7a5c3a]"
-        }`}
-      >
-        {title}
+    <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
+      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+        {label}
       </p>
 
-      <p
-        className={`mt-3 whitespace-pre-wrap text-sm leading-7 ${
-          featured ? "text-white/75" : "text-[#444]"
-        }`}
-      >
-        {cleanContent || "This part has not been completed yet."}
-      </p>
+      <h2 className="mt-4 text-xl font-semibold text-[#1f1f1f]">{title}</h2>
+
+      <p className="mt-3 text-sm leading-7 text-[#555]">{text}</p>
+    </section>
+  );
+}
+
+function MiniPrompt({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="rounded-2xl bg-[#fdfaf4] p-4">
+      <p className="text-sm font-semibold text-[#1f1f1f]">{title}</p>
+      <p className="mt-2 text-xs leading-5 text-[#666]">{text}</p>
     </div>
   );
 }
 
-function buildContextSummary(session: UnderPressureSession) {
-  const parts = [];
+function buildReflectionArtifact({
+  session,
+  analysis,
+  groundedNextStep,
+  notFullyControllableText,
+  outcomeDependentText,
+}: {
+  session: UnderPressureSession;
+  analysis: ReturnType<typeof analyzePressure>;
+  groundedNextStep: string;
+  notFullyControllableText: string;
+  outcomeDependentText: string;
+}) {
+  const contextLines = [
+    session.name ? `Name: ${session.name}` : "",
+    session.lifeStage ? `Life stage: ${session.lifeStage}` : "",
+    session.pressureDomain ? `Pressure domain: ${session.pressureDomain}` : "",
+    session.guidanceStyle ? `Guidance style: ${session.guidanceStyle}` : "",
+  ].filter(Boolean);
 
-  if (session.name) parts.push(`Name: ${session.name}`);
-  if (session.lifeStage) parts.push(`Life stage: ${session.lifeStage}`);
-  if (session.pressureDomain) {
-    parts.push(`Pressure domain: ${session.pressureDomain}`);
-  }
-  if (session.guidanceStyle) {
-    parts.push(`Guidance style: ${session.guidanceStyle}`);
-  }
+  const emotionalState =
+    session.mood || session.intensity
+      ? `${session.mood || "Not named"}${
+          session.intensity ? ` · Intensity ${session.intensity}` : ""
+        }`
+      : "Not completed";
 
-  if (parts.length === 0) return "No context selected.";
+  return `Context:
+${contextLines.length ? contextLines.join("\n") : "Not completed"}
 
-  return parts.join("\n");
-}
+Current emotional state:
+${emotionalState}
 
-function buildGroundedStepPlaceholder(session: UnderPressureSession) {
-  if (session.pressureDomain === "Family expectations") {
-    return "Example: This week, I will choose one concrete priority and do it well instead of trying to prove my entire future at once. I will do it on Tuesday afternoon. If I start worrying about what people back home think, I will return to the task in front of me.";
-  }
+What was weighing on me:
+${session.pressureText || "Not completed"}
 
-  if (session.pressureDomain === "School / academic performance") {
-    return "Example: This week, I will complete two focused study blocks, review the hardest topic first, and ask for help where I am stuck. If I avoid it, I will restart with one 25-minute block.";
-  }
+Detected pressure patterns:
+${analysis.categories.join(", ")}
 
-  if (session.pressureDomain === "Career / work") {
-    return "Example: This week, I will improve my CV, apply to two roles, and ask one person for advice. If rejection fear shows up, I will still complete the next application.";
-  }
+Pressure pattern summary:
+${analysis.dominantPattern}
 
-  if (session.pressureDomain === "Money / financial stability") {
-    return "Example: This week, I will review my numbers, make one realistic budget, and identify one action that improves my financial position. If I feel overwhelmed, I will start with only the numbers.";
-  }
+Outcome-dependent thinking:
+${outcomeDependentText || "Not completed"}
 
-  return "Example: This week, I will take one concrete action that improves my position. If uncertainty shows up, I will return to the next step instead of trying to solve the whole future.";
-}
+Direct control:
+${session.controlMap.control || "Not completed"}
 
-function buildNotFullyControllablePlaceholder(session: UnderPressureSession) {
-  if (session.pressureDomain === "Family expectations") {
-    return "Example: I cannot fully control the image people have of me, how they interpret my path, or whether every outcome matches their expectations.";
-  }
+Partial influence:
+${session.controlMap.influence || "Not completed"}
 
-  if (session.pressureDomain === "School / academic performance") {
-    return "Example: I cannot fully control the exact grade, the difficulty of the exam, or what one result seems to say from the outside.";
-  }
+Preparation:
+${session.controlMap.preparation || "Not completed"}
 
-  if (session.pressureDomain === "Career / work") {
-    return "Example: I cannot fully control one rejection, one hiring decision, timing, or whether every opportunity works out exactly when I want.";
-  }
+Not fully controllable:
+${session.controlMap.notFullyControllable || "Not completed"}
 
-  if (session.pressureDomain === "Money / financial stability") {
-    return "Example: I cannot fully control every external cost, opportunity, or uncertainty. I can control how directly I face the situation.";
-  }
+Grounded next step:
+${groundedNextStep || "Not completed"}
 
-  return "Example: I cannot fully control the final decision, timing, other people’s reactions, comparison, or whether the outcome happens exactly the way I want.";
-}
+What I am not fully controlling:
+${notFullyControllableText || "Not completed"}
 
-function buildFinalReflection(
-  session: UnderPressureSession,
-  groundingStatement: string
-) {
-  const sections = [
-    ["Context", buildContextSummary(session)],
-    [
-      "Current emotional state",
-      `${session.mood || "Not selected"} · Intensity ${
-        session.intensity || "not selected"
-      }`,
-    ],
-    ["What was weighing on me", session.pressureText],
-    ["Outcome-dependent thinking", session.attachmentText],
-    ["Direct control", session.controlMap.control],
-    ["Partial influence", session.controlMap.influence],
-    ["Preparation", session.controlMap.preparation],
-    ["Not fully controllable", session.controlMap.release],
-    ["Grounded next step", session.wiseEffortAction],
-    ["What I am not fully controlling", session.releaseStatement],
-    ["Grounding", groundingStatement],
-  ];
-
-  return sections
-    .filter(([, value]) => value && value.trim().length > 0)
-    .map(([label, value]) => `${label}:\n${value}`)
-    .join("\n\n");
+Grounding:
+${analysis.groundingStatement}`;
 }

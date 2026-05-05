@@ -6,6 +6,7 @@ export type Mood =
   | "Tired / depleted"
   | "Frustrated"
   | "Okay, but pressured"
+  // Legacy mood labels kept so older saved sessions do not break.
   | "Numb"
   | "Tired"
   | "Restless"
@@ -27,6 +28,11 @@ export type ControlMap = {
   control: string;
   influence: string;
   preparation: string;
+
+  // New field.
+  notFullyControllable: string;
+
+  // Legacy alias kept while old pages are being migrated.
   release: string;
 };
 
@@ -35,15 +41,25 @@ export type UnderPressureSession = {
   mood: Mood;
   intensity: string;
   pressureText: string;
-  attachmentText: string;
+
+  // New fields.
+  outcomeDependentText: string;
+  groundedNextStep: string;
+  notFullyControllableStatement: string;
+
   controlMap: ControlMap;
-  wiseEffortAction: string;
-  releaseStatement: string;
 
   lifeStage: string;
   pressureDomain: string;
   guidanceStyle: string;
+
+  // Legacy fields kept so older pages and older localStorage still work.
+  attachmentText: string;
+  wiseEffortAction: string;
+  releaseStatement: string;
+
   gender: string;
+  identityContext?: string;
 
   createdAt?: string;
   updatedAt?: string;
@@ -59,7 +75,7 @@ export type PressureAnalysis = {
   groundingStatement: string;
   severeDistressFlag: boolean;
 
-  // Legacy aliases so older pages do not break while we update the app in batches.
+  // Legacy aliases so older pages do not break while we update in batches.
   materialReality: string;
   attachmentInsight: string;
 };
@@ -78,20 +94,29 @@ export function getEmptySession(): UnderPressureSession {
     mood: "",
     intensity: "",
     pressureText: "",
-    attachmentText: "",
+
+    outcomeDependentText: "",
+    groundedNextStep: "",
+    notFullyControllableStatement: "",
+
     controlMap: {
       control: "",
       influence: "",
       preparation: "",
+      notFullyControllable: "",
       release: "",
     },
-    wiseEffortAction: "",
-    releaseStatement: "",
 
     lifeStage: "",
     pressureDomain: "",
     guidanceStyle: "",
+
+    attachmentText: "",
+    wiseEffortAction: "",
+    releaseStatement: "",
+
     gender: "",
+    identityContext: "",
 
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -101,8 +126,10 @@ export function getEmptySession(): UnderPressureSession {
 export function saveSession(session: UnderPressureSession) {
   if (typeof window === "undefined") return;
 
+  const normalized = normalizeSession(session);
+
   const nextSession: UnderPressureSession = {
-    ...session,
+    ...normalized,
     updatedAt: new Date().toISOString(),
   };
 
@@ -112,34 +139,17 @@ export function saveSession(session: UnderPressureSession) {
 export function loadSession(): UnderPressureSession {
   if (typeof window === "undefined") return getEmptySession();
 
-  const raw = localStorage.getItem(STORAGE_KEY);
+  const raw = getStoredRawSession();
+
   if (!raw) return getEmptySession();
 
   try {
     const parsed = JSON.parse(raw) as Partial<UnderPressureSession>;
-    const empty = getEmptySession();
+    const normalized = normalizeSession(parsed);
 
-    return {
-      ...empty,
-      ...parsed,
-      name: parsed.name || "",
-      mood: parsed.mood || "",
-      intensity: parsed.intensity || "",
-      pressureText: parsed.pressureText || "",
-      attachmentText: parsed.attachmentText || "",
-      wiseEffortAction: parsed.wiseEffortAction || "",
-      releaseStatement: parsed.releaseStatement || "",
-      lifeStage: parsed.lifeStage || "",
-      pressureDomain: parsed.pressureDomain || "",
-      guidanceStyle: parsed.guidanceStyle || "",
-      gender: parsed.gender || "",
-      controlMap: {
-        ...empty.controlMap,
-        ...(parsed.controlMap || {}),
-      },
-      createdAt: parsed.createdAt || empty.createdAt,
-      updatedAt: parsed.updatedAt || empty.updatedAt,
-    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+
+    return normalized;
   } catch {
     return getEmptySession();
   }
@@ -159,7 +169,7 @@ export function updateStoredSession(
 ): UnderPressureSession {
   const current = loadSession();
 
-  const next: UnderPressureSession = {
+  const next = normalizeSession({
     ...current,
     ...updates,
     controlMap: {
@@ -167,33 +177,57 @@ export function updateStoredSession(
       ...(updates.controlMap || {}),
     },
     updatedAt: new Date().toISOString(),
-  };
+  });
 
   saveSession(next);
+
   return next;
 }
 
+export function getOutcomeDependentText(session: UnderPressureSession) {
+  return session.outcomeDependentText || session.attachmentText || "";
+}
+
+export function getGroundedNextStep(session: UnderPressureSession) {
+  return session.groundedNextStep || session.wiseEffortAction || "";
+}
+
+export function getNotFullyControllableText(session: UnderPressureSession) {
+  return (
+    session.notFullyControllableStatement ||
+    session.releaseStatement ||
+    session.controlMap.notFullyControllable ||
+    session.controlMap.release ||
+    ""
+  );
+}
+
 export function getMissingReflectionSteps(session: UnderPressureSession) {
+  const normalized = normalizeSession(session);
   const missing: string[] = [];
 
-  if (!session.mood || !session.intensity) {
+  if (!normalized.mood || !normalized.intensity) {
     missing.push("Emotional check-in");
   }
 
-  if (session.pressureText.trim().length < 20) {
+  if (normalized.pressureText.trim().length < 20) {
     missing.push("Name the pressure");
   }
 
-  if (session.attachmentText.trim().length < 15) {
+  if (getOutcomeDependentText(normalized).trim().length < 15) {
     missing.push("Outcome-dependent thinking");
   }
 
-  if (session.controlMap.control.trim().length < 5) {
+  if (normalized.controlMap.control.trim().length < 5) {
     missing.push("What you can directly control");
   }
 
-  if (session.controlMap.release.trim().length < 5) {
+  if (getNotFullyControllableText(normalized).trim().length < 5) {
     missing.push("What is not fully controllable");
+  }
+
+  if (getGroundedNextStep(normalized).trim().length < 10) {
+    missing.push("Grounded next step");
   }
 
   return missing;
@@ -203,8 +237,86 @@ export function hasMinimumReflection(session: UnderPressureSession) {
   return getMissingReflectionSteps(session).length === 0;
 }
 
+function getStoredRawSession() {
+  if (typeof window === "undefined") return null;
+
+  for (const key of LEGACY_STORAGE_KEYS) {
+    const value = localStorage.getItem(key);
+
+    if (value) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+function normalizeSession(
+  rawSession: Partial<UnderPressureSession>
+): UnderPressureSession {
+  const empty = getEmptySession();
+
+  const rawControlMap = rawSession.controlMap || empty.controlMap;
+
+  const notFullyControllable =
+    rawControlMap.notFullyControllable ||
+    rawControlMap.release ||
+    rawSession.notFullyControllableStatement ||
+    rawSession.releaseStatement ||
+    "";
+
+  const outcomeDependentText =
+    rawSession.outcomeDependentText || rawSession.attachmentText || "";
+
+  const groundedNextStep =
+    rawSession.groundedNextStep || rawSession.wiseEffortAction || "";
+
+  const notFullyControllableStatement =
+    rawSession.notFullyControllableStatement ||
+    rawSession.releaseStatement ||
+    notFullyControllable ||
+    "";
+
+  return {
+    ...empty,
+    ...rawSession,
+
+    name: rawSession.name || "",
+    mood: rawSession.mood || "",
+    intensity: rawSession.intensity || "",
+    pressureText: rawSession.pressureText || "",
+
+    outcomeDependentText,
+    groundedNextStep,
+    notFullyControllableStatement,
+
+    controlMap: {
+      control: rawControlMap.control || "",
+      influence: rawControlMap.influence || "",
+      preparation: rawControlMap.preparation || "",
+      notFullyControllable,
+      release: notFullyControllable,
+    },
+
+    lifeStage: rawSession.lifeStage || "",
+    pressureDomain: rawSession.pressureDomain || "",
+    guidanceStyle: rawSession.guidanceStyle || "",
+
+    attachmentText: outcomeDependentText,
+    wiseEffortAction: groundedNextStep,
+    releaseStatement: notFullyControllableStatement,
+
+    gender: rawSession.gender || "",
+    identityContext: rawSession.identityContext || "",
+
+    createdAt: rawSession.createdAt || empty.createdAt,
+    updatedAt: rawSession.updatedAt || empty.updatedAt,
+  };
+}
+
 function includesAny(text: string, words: string[]) {
   const normalized = text.toLowerCase();
+
   return words.some((word) => normalized.includes(word));
 }
 
@@ -218,8 +330,15 @@ function addCategory(
 }
 
 export function analyzePressure(session: UnderPressureSession): PressureAnalysis {
-  const combined =
-    `${session.pressureText} ${session.attachmentText} ${session.pressureDomain} ${session.mood}`.toLowerCase();
+  const normalized = normalizeSession(session);
+
+  const combined = `
+    ${normalized.pressureText}
+    ${getOutcomeDependentText(normalized)}
+    ${normalized.pressureDomain}
+    ${normalized.mood}
+    ${normalized.lifeStage}
+  `.toLowerCase();
 
   const categories: PressureCategory[] = [];
 
@@ -248,6 +367,10 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
       "relationship",
       "deadline",
       "responsibility",
+      "responsibilities",
+      "study",
+      "studying",
+      "abroad",
     ])
   ) {
     addCategory(categories, "Practical stressor");
@@ -269,6 +392,9 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
       "tomorrow",
       "next",
       "guarantee",
+      "path",
+      "chance",
+      "opportunity",
     ])
   ) {
     addCategory(categories, "Future uncertainty");
@@ -281,11 +407,14 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
       "mother",
       "father",
       "disappoint",
+      "disappointed",
       "expectations",
       "proud",
       "pressure from home",
       "back home",
       "approval from family",
+      "home",
+      "believed in me",
     ])
   ) {
     addCategory(categories, "Family / expectation pressure");
@@ -305,6 +434,8 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
       "classmates",
       "social comparison",
       "behind others",
+      "polished version",
+      "seen as",
     ])
   ) {
     addCategory(categories, "Social comparison");
@@ -314,6 +445,7 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
     includesAny(combined, [
       "perfect",
       "failure",
+      "fail",
       "mistake",
       "not enough",
       "best",
@@ -323,6 +455,8 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
       "flawless",
       "everything right",
       "high standards",
+      "do very well",
+      "fall behind",
     ])
   ) {
     addCategory(categories, "Perfectionistic standards");
@@ -342,6 +476,10 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
       "admired",
       "impress",
       "prove to them",
+      "prove",
+      "pride",
+      "successful",
+      "making my family proud",
     ])
   ) {
     addCategory(categories, "Validation seeking");
@@ -355,12 +493,14 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
       "failure",
       "who i am",
       "something wrong with me",
-      "prove",
       "means about me",
       "good enough",
       "not capable",
+      "capable",
       "verdict",
       "behind in life",
+      "as capable",
+      "measure of my worth",
     ])
   ) {
     addCategory(categories, "Self-worth threat");
@@ -380,6 +520,8 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
       "restless",
       "tense",
       "frustrated",
+      "doubt",
+      "uncertainty",
     ])
   ) {
     addCategory(categories, "Emotional overload");
@@ -419,20 +561,20 @@ export function analyzePressure(session: UnderPressureSession): PressureAnalysis
     categories.push("Unclear or mixed pressure");
   }
 
-  const practicalLayer = buildPracticalLayer(categories, session);
+  const practicalLayer = buildPracticalLayer(categories, normalized);
   const outcomeDependentInsight = buildOutcomeDependentInsight(
     categories,
-    session
+    normalized
   );
 
   return {
     categories,
-    dominantPattern: buildDominantPattern(categories, session),
+    dominantPattern: buildDominantPattern(categories, normalized),
     practicalLayer,
-    innerEffect: buildInnerEffect(categories, session),
+    innerEffect: buildInnerEffect(categories, normalized),
     outcomeDependentInsight,
-    controlPrompt: buildControlPrompt(categories, session),
-    groundingStatement: buildGroundingStatement(categories, session),
+    controlPrompt: buildControlPrompt(categories, normalized),
+    groundingStatement: buildGroundingStatement(categories, normalized),
     severeDistressFlag,
 
     materialReality: practicalLayer,
@@ -445,6 +587,7 @@ function buildDominantPattern(
   session: UnderPressureSession
 ) {
   const name = session.name ? `${session.name}, ` : "";
+
   const lifeStage = session.lifeStage
     ? `as someone in the ${session.lifeStage.toLowerCase()} stage, `
     : "";
@@ -457,17 +600,17 @@ function buildDominantPattern(
   }
 
   if (
+    categories.includes("Family / expectation pressure") &&
+    categories.includes("Validation seeking")
+  ) {
+    return `${name}${lifeStage}the pressure seems tied to being seen as successful, capable, or worthy by people whose opinion matters to you. The external expectation may have become an internal demand.`;
+  }
+
+  if (
     categories.includes("Social comparison") &&
     categories.includes("Future uncertainty")
   ) {
     return `${name}${lifeStage}the pressure seems connected to comparison and uncertainty. Other people’s timelines may be making your own path feel delayed, even if your next step still has room to unfold.`;
-  }
-
-  if (
-    categories.includes("Family / expectation pressure") &&
-    categories.includes("Validation seeking")
-  ) {
-    return `${name}${lifeStage}the pressure seems tied to being seen as successful, capable, or acceptable by people whose opinion matters to you. The external expectation may have become an internal demand.`;
   }
 
   if (categories.includes("Depletion signs")) {
@@ -508,6 +651,10 @@ function buildInnerEffect(
     return "The pressure seems to be entering the inner self as a verdict. If this does not work out, it may feel like it means something painful about your capability, future, or value. That is where pressure becomes heavier than the original problem.";
   }
 
+  if (categories.includes("Family / expectation pressure")) {
+    return "The pressure seems connected to expectations from people who matter. That can make the situation feel heavier because the outcome is no longer only about performance; it also feels tied to pride, approval, or disappointment.";
+  }
+
   if (categories.includes("Social comparison")) {
     return "The pressure seems to be entering through comparison. Other people’s timelines may be making your own life feel delayed, even if their path is not the correct measure of yours.";
   }
@@ -531,24 +678,26 @@ function buildOutcomeDependentInsight(
   categories: PressureCategory[],
   session: UnderPressureSession
 ) {
-  if (!session.attachmentText.trim()) {
+  const outcomeText = getOutcomeDependentText(session);
+
+  if (!outcomeText.trim()) {
     return "The outcome-dependent layer is not named yet. The next question is: what result do you feel needs to happen before you are allowed to feel okay?";
   }
 
   if (categories.includes("Validation seeking")) {
-    return "You may not only want the outcome itself. You may want the recognition, respect, or approval that you believe the outcome would give you.";
-  }
-
-  if (categories.includes("Future uncertainty")) {
-    return "The attachment may be to certainty itself: the need to know that things will work out before you allow yourself to breathe.";
+    return "You may not only want the outcome itself. You may want the recognition, respect, pride, or approval that you believe the outcome would give you.";
   }
 
   if (categories.includes("Family / expectation pressure")) {
-    return "The outcome may feel tied to being acceptable in the eyes of family or people whose opinion carries emotional weight.";
+    return "The outcome may feel tied to being acceptable in the eyes of family or people whose opinion carries emotional weight. That result can matter without becoming the only measure of your worth.";
   }
 
   if (categories.includes("Self-worth threat")) {
     return "The outcome seems emotionally loaded because it may feel connected to self-worth. The result can matter without becoming the only proof that you are capable, valuable, or on track.";
+  }
+
+  if (categories.includes("Future uncertainty")) {
+    return "The attachment may be to certainty itself: the need to know that things will work out before you allow yourself to breathe.";
   }
 
   if (session.guidanceStyle === "Direct and practical") {
@@ -559,7 +708,7 @@ function buildOutcomeDependentInsight(
     return "The attachment is probably not just to the result itself. It may be attached to a deeper need for proof, safety, belonging, recognition, or permission to feel enough.";
   }
 
-  return "The attachment is probably not only to the result. It is to what the result represents: security, proof, belonging, status, relief, or permission to feel okay.";
+  return "The outcome is probably not only about the result. It is also about what the result represents: security, proof, belonging, status, relief, or permission to feel okay.";
 }
 
 function buildControlPrompt(
@@ -579,7 +728,7 @@ function buildControlPrompt(
   }
 
   if (session.guidanceStyle === "Direct and practical") {
-    return "Name the next move. One action you control, one thing you can influence, one thing to prepare for, and one thing to stop trying to fully control.";
+    return "Name the next move: one action you control, one thing you can influence, one thing to prepare for, and one thing to stop trying to fully control.";
   }
 
   return "Name one action within your control, one thing you can influence, one thing to prepare for, and one thing that is not fully controllable.";
@@ -595,6 +744,10 @@ function buildGroundingStatement(
 
   if (categories.includes("Social comparison")) {
     return "Other people’s timelines are information, not instructions for my life.";
+  }
+
+  if (categories.includes("Family / expectation pressure")) {
+    return "I can care about people’s expectations without making their image of me the only measure of my worth.";
   }
 
   if (categories.includes("Practical stressor")) {
