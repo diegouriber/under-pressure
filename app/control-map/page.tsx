@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import FlowShell from "../components/FlowShell";
 import {
+  analyzePressure,
   loadSession,
   saveSession,
   type ControlMap,
@@ -17,7 +18,12 @@ export default function ControlMapPage() {
     setSession(loadSession());
   }, []);
 
-  if (!session) {
+  const analysis = useMemo(() => {
+    if (!session) return null;
+    return analyzePressure(session);
+  }, [session]);
+
+  if (!session || !analysis) {
     return (
       <main className="min-h-screen bg-[#fdfaf4] px-6 py-10 text-[#1f1f1f]">
         <div className="mx-auto max-w-3xl rounded-3xl bg-white p-8 shadow-sm">
@@ -27,140 +33,146 @@ export default function ControlMapPage() {
     );
   }
 
+  const canContinue =
+    session.controlMap.control.trim().length >= 5 &&
+    session.controlMap.notFullyControllable.trim().length >= 5;
+
   function updateControlMap(field: keyof ControlMap, value: string) {
     if (!session) return;
 
-    const nextSession = {
+    const nextControlMap: ControlMap = {
+      ...session.controlMap,
+      [field]: value,
+    };
+
+    if (field === "notFullyControllable") {
+      nextControlMap.release = value;
+    }
+
+    if (field === "release") {
+      nextControlMap.notFullyControllable = value;
+    }
+
+    const nextSession: UnderPressureSession = {
       ...session,
-      controlMap: {
-        ...session.controlMap,
-        [field]: value,
-      },
+      controlMap: nextControlMap,
+      notFullyControllableStatement:
+        field === "notFullyControllable" || field === "release"
+          ? value
+          : session.notFullyControllableStatement,
+      releaseStatement:
+        field === "notFullyControllable" || field === "release"
+          ? value
+          : session.releaseStatement,
     };
 
     setSession(nextSession);
     saveSession(nextSession);
   }
 
-  const canContinue = Boolean(
-    session.controlMap.control.trim().length >= 5 &&
-      session.controlMap.release.trim().length >= 5
-  );
-
-  const title = session.name
-    ? `${session.name}, separate effort from fixation.`
-    : "Separate effort from fixation.";
-
-  const prompts = buildControlPrompts(session);
-
   return (
     <FlowShell
       eyebrow="Control map"
-      title={title}
-      description="Pressure becomes clearer when you stop treating everything as equally controllable. Some things require action. Some require preparation. Some require acceptance."
+      title="Separate what is yours from what is not fully yours."
+      description="This step turns pressure into structure. Not everything is controllable, but not everything is helpless either."
       step={7}
       totalSteps={8}
     >
       <div className="space-y-8">
-        <section className="overflow-hidden rounded-[2rem] bg-[#1f1f1f] text-white shadow-sm">
-          <div className="grid gap-0 md:grid-cols-[0.9fr_1.1fr]">
-            <div className="relative min-h-[260px] bg-[#151515] p-6 md:p-8">
-              <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10" />
-              <div className="absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-[#c9a66b]/20" />
+        <section className="rounded-[2rem] bg-[#1f1f1f] p-6 text-white shadow-sm md:p-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">
+            Reflection frame
+          </p>
 
-              <div className="relative z-10">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">
-                  Control map
-                </p>
+          <h2 className="mt-4 max-w-3xl text-3xl font-semibold leading-[1.2] tracking-[-0.04em] md:text-4xl">
+            The goal is not to control everything. The goal is to respond where
+            response is possible.
+          </h2>
 
-                <div className="mt-8 grid grid-cols-2 gap-3">
-                  <MapQuadrant label="Control" active />
-                  <MapQuadrant label="Influence" active />
-                  <MapQuadrant label="Preparation" />
-                  <MapQuadrant label="Release" />
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6 md:p-8">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">
-                Wise effort principle
-              </p>
-
-              <h2 className="mt-4 text-2xl font-semibold leading-10 tracking-[-0.03em]">
-                Act where you have responsibility. Release where you do not have
-                control.
-              </h2>
-
-              <p className="mt-5 text-sm leading-7 text-white/70">
-                This is not passivity. It is focused effort without emotional
-                self-destruction.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section className="grid gap-5 md:grid-cols-2">
-          <ControlTextArea
-            icon="▣"
-            label="Control"
-            title="What can you directly do?"
-            helper="Your behavior, preparation, effort, schedule, honesty, and next action."
-            value={session.controlMap.control}
-            placeholder={prompts.control}
-            onChange={(value) => updateControlMap("control", value)}
-          />
-
-          <ControlTextArea
-            icon="↔"
-            label="Influence"
-            title="What can you improve but not guarantee?"
-            helper="Performance, relationships, opportunities, communication, and reputation."
-            value={session.controlMap.influence}
-            placeholder={prompts.influence}
-            onChange={(value) => updateControlMap("influence", value)}
-          />
-
-          <ControlTextArea
-            icon="◇"
-            label="Preparation"
-            title="What can you prepare for?"
-            helper="Plans, backup options, conversations, skills, savings, or study systems."
-            value={session.controlMap.preparation}
-            placeholder={prompts.preparation}
-            onChange={(value) => updateControlMap("preparation", value)}
-          />
-
-          <ControlTextArea
-            icon="↓"
-            label="Release"
-            title="What is outside your control?"
-            helper="Other people’s reactions, final decisions, timing, luck, comparison, and the past."
-            value={session.controlMap.release}
-            placeholder={prompts.release}
-            onChange={(value) => updateControlMap("release", value)}
-          />
+          <p className="mt-5 max-w-2xl text-sm leading-7 text-white/70">
+            Pressure becomes heavier when everything feels equally urgent,
+            equally personal, and equally controllable. This map separates the
+            pressure into four different kinds of responsibility.
+          </p>
         </section>
 
         <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#1f1f1f] text-xl text-white">
-              →
-            </div>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+            What the previous step noticed
+          </p>
 
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-                Under Pressure principle
-              </p>
+          <p className="mt-4 text-base leading-8 text-[#444]">
+            {analysis.controlPrompt}
+          </p>
+        </section>
 
-              <p className="mt-4 text-lg leading-8 text-[#3f3f3f]">
-                Wise effort means acting where you have responsibility without
-                demanding that life guarantees the result. You are allowed to
-                care. You are not required to collapse if the outcome remains
-                uncertain.
-              </p>
-            </div>
-          </div>
+        <section className="grid gap-5 md:grid-cols-2">
+          <MapField
+            label="Direct control"
+            title="What can you directly do?"
+            description="Actions, choices, routines, messages, preparation, effort, honesty, boundaries, or asking for help."
+            value={session.controlMap.control}
+            placeholder="Example: I can control my effort, how I organize my week, how honestly I study and work, and whether I ask for help when I need it."
+            onChange={(value) => updateControlMap("control", value)}
+          />
+
+          <MapField
+            label="Partial influence"
+            title="What can you influence, but not guarantee?"
+            description="Things you can improve your chances around, but cannot fully force into a specific result."
+            value={session.controlMap.influence}
+            placeholder="Example: I can influence my performance by preparing well, communicating clearly, and staying consistent instead of trying to prove everything at once."
+            onChange={(value) => updateControlMap("influence", value)}
+          />
+
+          <MapField
+            label="Preparation"
+            title="What can you prepare for?"
+            description="Plans, alternatives, resources, conversations, financial buffers, study blocks, or backup options."
+            value={session.controlMap.preparation}
+            placeholder="Example: I can prepare for uncertainty by having a realistic plan, keeping my options open, saving money where I can, and accepting that progress may not look perfect from the outside."
+            onChange={(value) => updateControlMap("preparation", value)}
+          />
+
+          <MapField
+            label="Not fully controllable"
+            title="What can you stop trying to fully control?"
+            description="Other people’s opinions, final outcomes, timelines, interpretations, approval, luck, or whether everything looks perfect from outside."
+            value={session.controlMap.notFullyControllable}
+            placeholder="Example: I cannot fully control the image people have of me back home, how they interpret my path, or whether every outcome matches their expectations."
+            onChange={(value) =>
+              updateControlMap("notFullyControllable", value)
+            }
+          />
+        </section>
+
+        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+            Why this step matters
+          </p>
+
+          <p className="mt-3 text-sm leading-7 text-[#555]">
+            This map helps prevent two common traps: trying to control
+            everything, or deciding nothing can be done. The middle ground is
+            clearer: act where action helps, prepare where preparation helps,
+            influence what you can, and stop treating the uncontrollable as a
+            personal failure.
+          </p>
+        </section>
+
+        <section className="rounded-3xl bg-[#f6f1e8] p-6 md:p-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+            Next reflection
+          </p>
+
+          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[#1f1f1f]">
+            Turn the map into one grounded next step.
+          </h2>
+
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-[#555]">
+            The final page will help you choose one concrete action and one
+            thing you are no longer trying to fully control.
+          </p>
         </section>
 
         <div className="flex flex-col gap-4 sm:flex-row">
@@ -169,7 +181,7 @@ export default function ControlMapPage() {
               href="/final"
               className="rounded-full bg-[#1f1f1f] px-7 py-4 text-center text-sm font-semibold text-white transition hover:opacity-90"
             >
-              Finish with direction
+              Continue to grounded next step
             </Link>
           ) : (
             <button
@@ -177,7 +189,7 @@ export default function ControlMapPage() {
               disabled
               className="cursor-not-allowed rounded-full bg-[#1f1f1f]/40 px-7 py-4 text-center text-sm font-semibold text-white"
             >
-              Complete control and release to continue
+              Complete direct control and not fully controllable
             </button>
           )}
 
@@ -193,156 +205,40 @@ export default function ControlMapPage() {
   );
 }
 
-function MapQuadrant({
-  label,
-  active = false,
-}: {
-  label: string;
-  active?: boolean;
-}) {
-  return (
-    <div
-      className={`rounded-2xl border p-4 ${
-        active
-          ? "border-[#e7c987]/40 bg-[#e7c987]/15"
-          : "border-white/10 bg-white/[0.06]"
-      }`}
-    >
-      <div
-        className={`mb-3 h-3 w-3 rounded-full ${
-          active ? "bg-[#e7c987]" : "bg-white/25"
-        }`}
-      />
-
-      <p className="text-sm font-medium text-white/80">{label}</p>
-    </div>
-  );
-}
-
-function ControlTextArea({
-  icon,
+function MapField({
   label,
   title,
-  helper,
+  description,
   value,
   placeholder,
   onChange,
 }: {
-  icon: string;
   label: string;
   title: string;
-  helper: string;
+  description: string;
   value: string;
   placeholder: string;
   onChange: (value: string) => void;
 }) {
   return (
-    <div className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
-      <div className="flex items-start gap-4">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#f6f1e8] text-xl text-[#1f1f1f]">
-          {icon}
-        </div>
+    <section className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
+      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+        {label}
+      </p>
 
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-            {label}
-          </p>
+      <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
+        {title}
+      </h2>
 
-          <h2 className="mt-2 text-xl font-semibold text-[#1f1f1f]">
-            {title}
-          </h2>
-
-          <p className="mt-2 text-sm leading-6 text-[#666]">{helper}</p>
-        </div>
-      </div>
+      <p className="mt-3 text-sm leading-7 text-[#666]">{description}</p>
 
       <textarea
-        rows={6}
+        rows={7}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="mt-5 w-full resize-none rounded-2xl border border-[#1f1f1f]/10 bg-[#fdfaf4] p-4 text-sm leading-6 text-[#1f1f1f] outline-none transition placeholder:text-[#9a8f80] focus:border-[#7a5c3a]"
+        className="mt-5 w-full resize-none rounded-3xl border border-[#1f1f1f]/10 bg-[#fdfaf4] p-5 text-sm leading-7 text-[#1f1f1f] outline-none transition placeholder:text-[#9a8f80] focus:border-[#7a5c3a]"
       />
-    </div>
+    </section>
   );
-}
-
-function buildControlPrompts(session: UnderPressureSession) {
-  const domain = session.pressureDomain;
-
-  if (domain === "Family expectations") {
-    return {
-      control:
-        "Example: I can control my effort, honesty, consistency, and how I communicate what I am realistically carrying.",
-      influence:
-        "Example: I can influence how my family understands my path by communicating clearly, but I cannot fully control their expectations.",
-      preparation:
-        "Example: I can prepare for difficult conversations, uncertainty, and the possibility that my path may not look perfect from the outside.",
-      release:
-        "Example: I need to release the idea that I must constantly live up to the perfect image people have of me.",
-    };
-  }
-
-  if (domain === "School / academic performance") {
-    return {
-      control:
-        "Example: I can control my study blocks, my revision plan, my sleep, and whether I ask questions early.",
-      influence:
-        "Example: I can influence my performance through preparation, but I cannot guarantee the exact grade.",
-      preparation:
-        "Example: I can prepare for exams, feedback, deadlines, and backup plans if one result is not ideal.",
-      release:
-        "Example: I need to release the idea that one grade decides my intelligence, future, or worth.",
-    };
-  }
-
-  if (domain === "Career / work") {
-    return {
-      control:
-        "Example: I can control applications, preparation, follow-ups, skill-building, and how I show up at work.",
-      influence:
-        "Example: I can influence interviews, performance, reputation, and opportunities, but I cannot guarantee every decision.",
-      preparation:
-        "Example: I can prepare a stronger CV, backup options, conversations, and a realistic plan for uncertainty.",
-      release:
-        "Example: I need to release the idea that one rejection or delay defines my career path.",
-    };
-  }
-
-  if (domain === "Money / financial stability") {
-    return {
-      control:
-        "Example: I can control my spending plan, savings target, income search, and how directly I face the numbers.",
-      influence:
-        "Example: I can influence my financial stability through planning and action, but I cannot control every external cost or opportunity.",
-      preparation:
-        "Example: I can prepare a budget, emergency plan, backup income option, or conversation about support.",
-      release:
-        "Example: I need to release the idea that financial uncertainty means I am failing as a person.",
-    };
-  }
-
-  if (domain === "Social comparison") {
-    return {
-      control:
-        "Example: I can control how much I expose myself to comparison and what actions I take on my own path.",
-      influence:
-        "Example: I can influence my progress by staying consistent, but I cannot control other people’s timelines.",
-      preparation:
-        "Example: I can prepare my next step without needing it to look impressive to others.",
-      release:
-        "Example: I need to release the idea that other people’s speed is the correct measure of my life.",
-    };
-  }
-
-  return {
-    control:
-      "Example: My effort, my schedule, my next honest action, my communication, my preparation.",
-    influence:
-      "Example: Performance, relationships, reputation, opportunities, confidence, how clearly I show up.",
-    preparation:
-      "Example: A backup plan, a second application, a conversation, a savings target, a study plan.",
-    release:
-      "Example: Other people’s timelines, the final decision, the economy, luck, timing, comparison.",
-  };
 }
