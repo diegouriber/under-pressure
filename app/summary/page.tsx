@@ -33,6 +33,9 @@ export default function SummaryPage() {
     ? `${session.name}, your pressure may not be one thing.`
     : "Your pressure may not be one thing.";
 
+  const contextSummary = buildContextSummary(session);
+  const personalizedMeaning = buildPersonalizedMeaning(session);
+
   return (
     <FlowShell
       eyebrow="Pressure pattern summary"
@@ -56,6 +59,18 @@ export default function SummaryPage() {
               If you might hurt yourself or feel in immediate danger, contact
               emergency services, a crisis line, or a trusted person now. This
               app can support reflection, but it is not crisis care.
+            </p>
+          </section>
+        )}
+
+        {contextSummary && (
+          <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+              Context used
+            </p>
+
+            <p className="mt-3 text-sm leading-7 text-[#555]">
+              {contextSummary}
             </p>
           </section>
         )}
@@ -104,15 +119,11 @@ export default function SummaryPage() {
 
         <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-            What this means
+            What this means for this pressure
           </p>
 
           <p className="mt-4 text-base leading-8 text-[#444]">
-            The point is not to stop caring. The point is to care with more
-            separation. One part of the pressure may require effort. Another
-            part may require preparation. Another part may need to be released
-            because it is asking you to control what no person can fully
-            control.
+            {personalizedMeaning}
           </p>
         </section>
 
@@ -180,4 +191,65 @@ function LayerCard({
       <p className="mt-4 text-sm leading-7 text-[#555]">{content}</p>
     </section>
   );
+}
+
+function buildContextSummary(session: UnderPressureSession) {
+  const parts = [];
+
+  if (session.lifeStage) {
+    parts.push(session.lifeStage.toLowerCase());
+  }
+
+  if (session.pressureDomain) {
+    parts.push(session.pressureDomain.toLowerCase());
+  }
+
+  if (session.guidanceStyle) {
+    parts.push(`${session.guidanceStyle.toLowerCase()} guidance`);
+  }
+
+  if (parts.length === 0) return "";
+
+  return `This summary is being shaped by your context: ${parts.join(
+    " · "
+  )}.`;
+}
+
+function buildPersonalizedMeaning(session: UnderPressureSession) {
+  const domain = session.pressureDomain;
+  const style = session.guidanceStyle;
+
+  if (style === "Direct and practical") {
+    return "The point is not to overanalyze the pressure. The point is to separate what needs action from what needs release. One part of this situation may require a concrete next move. Another part may be mental weight that is not helping you act.";
+  }
+
+  if (style === "Calm and grounding") {
+    return "The point is not to force yourself into instant clarity. The point is to slow the pressure down enough to see it clearly. You can care about the outcome while still returning to the present moment and choosing one grounded next step.";
+  }
+
+  if (style === "Reflective and deep") {
+    return "The point is not only to solve the surface problem. The deeper question is what this pressure has started to represent: proof, safety, belonging, success, approval, or identity. Once that is named, the pressure becomes less total.";
+  }
+
+  if (domain === "School / academic performance") {
+    return "This may involve real academic responsibilities, but the grade or performance outcome should not become the full measure of your intelligence, future, or worth.";
+  }
+
+  if (domain === "Career / work") {
+    return "This may involve real career action, but career uncertainty should not become a verdict on whether your life is moving correctly.";
+  }
+
+  if (domain === "Money / financial stability") {
+    return "This may involve real financial planning, but financial pressure becomes heavier when every unknown starts feeling like proof that you are unsafe or failing.";
+  }
+
+  if (domain === "Family expectations") {
+    return "This may involve real family expectations, but another person’s approval cannot become the only place where your peace is allowed to exist.";
+  }
+
+  if (domain === "Social comparison") {
+    return "This may involve real ambition, but comparison becomes dangerous when other people’s timelines start replacing your own judgment.";
+  }
+
+  return "The point is not to stop caring. The point is to care with more separation. One part of the pressure may require effort. Another part may require preparation. Another part may need to be released because it is asking you to control what no person can fully control.";
 }
