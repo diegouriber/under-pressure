@@ -65,78 +65,143 @@ export default function SummaryPage() {
 
         {contextSummary && (
           <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-              Context used
-            </p>
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#f6f1e8] text-xl">
+                ◌
+              </div>
 
-            <p className="mt-3 text-sm leading-7 text-[#555]">
-              {contextSummary}
-            </p>
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+                  Context used
+                </p>
+
+                <p className="mt-3 text-sm leading-7 text-[#555]">
+                  {contextSummary}
+                </p>
+              </div>
+            </div>
           </section>
         )}
 
-        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-            Detected pressure patterns
-          </p>
+        <section className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+                Detected pressure patterns
+              </p>
 
-          <div className="mt-5 flex flex-wrap gap-3">
+              <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
+                What the app noticed
+              </h2>
+            </div>
+
+            <p className="max-w-sm text-sm leading-6 text-[#666]">
+              These are not labels. They are clues for understanding where the
+              pressure may be coming from.
+            </p>
+          </div>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
             {analysis.categories.map((category) => (
-              <PressureChip key={category} category={category} />
+              <PressurePatternCard key={category} category={category} />
             ))}
+          </div>
+        </section>
+
+        <section className="overflow-hidden rounded-[2rem] bg-[#1f1f1f] text-white shadow-sm">
+          <div className="grid gap-0 md:grid-cols-[0.9fr_1.1fr]">
+            <div className="relative min-h-[260px] bg-[#151515] p-6 md:p-8">
+              <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10" />
+              <div className="absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-[#c9a66b]/20" />
+
+              <div className="relative z-10">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">
+                  Pressure map
+                </p>
+
+                <div className="mt-8 space-y-4">
+                  <VisualLayer number="1" label="Reality" active />
+                  <VisualLayer number="2" label="Inner effect" active />
+                  <VisualLayer number="3" label="Attachment" active />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 md:p-8">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">
+                Reflective interpretation
+              </p>
+
+              <h2 className="mt-4 text-2xl font-semibold leading-10 tracking-[-0.03em]">
+                {analysis.dominantPattern}
+              </h2>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div className="mb-5">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+              Three layers
+            </p>
+
+            <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[#1f1f1f]">
+              Separate the pressure into parts.
+            </h2>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-3">
+            <LayerCard
+              label="Layer 1"
+              icon="▣"
+              title="Material reality"
+              content={analysis.materialReality}
+            />
+
+            <LayerCard
+              label="Layer 2"
+              icon="◍"
+              title="Inner effect"
+              content={analysis.innerEffect}
+            />
+
+            <LayerCard
+              label="Layer 3"
+              icon="◇"
+              title="Outcome attachment"
+              content={analysis.attachmentInsight}
+            />
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#1f1f1f] text-xl text-white">
+              →
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+                What this means for this pressure
+              </p>
+
+              <p className="mt-4 text-base leading-8 text-[#444]">
+                {personalizedMeaning}
+              </p>
+            </div>
           </div>
         </section>
 
         <section className="rounded-3xl bg-[#f6f1e8] p-6 md:p-8">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-            Reflective interpretation
-          </p>
-
-          <h2 className="mt-3 text-2xl font-semibold leading-9 text-[#1f1f1f]">
-            {analysis.dominantPattern}
-          </h2>
-        </section>
-
-        <div className="grid gap-5 md:grid-cols-3">
-          <LayerCard
-            label="Layer 1"
-            title="Material reality"
-            content={analysis.materialReality}
-          />
-
-          <LayerCard
-            label="Layer 2"
-            title="Inner effect"
-            content={analysis.innerEffect}
-          />
-
-          <LayerCard
-            label="Layer 3"
-            title="Outcome attachment"
-            content={analysis.attachmentInsight}
-          />
-        </div>
-
-        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-            What this means for this pressure
-          </p>
-
-          <p className="mt-4 text-base leading-8 text-[#444]">
-            {personalizedMeaning}
-          </p>
-        </section>
-
-        <section className="rounded-3xl bg-[#1f1f1f] p-6 text-white md:p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/55">
             Next reflection
           </p>
 
-          <h2 className="mt-3 text-2xl font-semibold">
+          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[#1f1f1f]">
             What outcome are you attached to?
           </h2>
 
-          <p className="mt-3 text-sm leading-7 text-white/70">
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-[#555]">
             The next step is to name the result you feel you need before you are
             allowed to feel okay. This is where pressure usually becomes
             personal.
@@ -163,26 +228,46 @@ export default function SummaryPage() {
   );
 }
 
-function PressureChip({ category }: { category: PressureCategory }) {
+function PressurePatternCard({ category }: { category: PressureCategory }) {
+  const meta = getPressureCategoryMeta(category);
+
   return (
-    <span className="rounded-full border border-[#1f1f1f]/10 bg-[#f6f1e8] px-4 py-2 text-sm font-medium text-[#1f1f1f]">
-      {category}
-    </span>
+    <div className="rounded-3xl border border-[#1f1f1f]/10 bg-[#fdfaf4] p-5">
+      <div className="flex items-start gap-4">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#1f1f1f] text-lg text-white">
+          {meta.icon}
+        </div>
+
+        <div>
+          <h3 className="font-semibold text-[#1f1f1f]">{category}</h3>
+
+          <p className="mt-2 text-sm leading-6 text-[#666]">
+            {meta.description}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
 function LayerCard({
   label,
+  icon,
   title,
   content,
 }: {
   label: string;
+  icon: string;
   title: string;
   content: string;
 }) {
   return (
     <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f6f1e8] text-xl text-[#1f1f1f]">
+        {icon}
+      </div>
+
+      <p className="mt-5 text-xs font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
         {label}
       </p>
 
@@ -190,6 +275,30 @@ function LayerCard({
 
       <p className="mt-4 text-sm leading-7 text-[#555]">{content}</p>
     </section>
+  );
+}
+
+function VisualLayer({
+  number,
+  label,
+  active,
+}: {
+  number: string;
+  label: string;
+  active?: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] p-3">
+      <div
+        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
+          active ? "bg-[#e7c987] text-[#1f1f1f]" : "bg-white/15 text-white"
+        }`}
+      >
+        {number}
+      </div>
+
+      <p className="text-sm font-medium text-white/80">{label}</p>
+    </div>
   );
 }
 
@@ -252,4 +361,84 @@ function buildPersonalizedMeaning(session: UnderPressureSession) {
   }
 
   return "The point is not to stop caring. The point is to care with more separation. One part of the pressure may require effort. Another part may require preparation. Another part may need to be released because it is asking you to control what no person can fully control.";
+}
+
+function getPressureCategoryMeta(category: PressureCategory) {
+  if (category === "Material reality") {
+    return {
+      icon: "▣",
+      description:
+        "There may be a real practical issue here: money, grades, work, stability, deadlines, or responsibility.",
+    };
+  }
+
+  if (category === "Future uncertainty") {
+    return {
+      icon: "⌁",
+      description:
+        "The pressure is partly coming from trying to solve an unknown future before it has arrived.",
+    };
+  }
+
+  if (category === "Family expectations") {
+    return {
+      icon: "⌂",
+      description:
+        "The pressure may be connected to approval, pride, duty, or fear of disappointing people close to you.",
+    };
+  }
+
+  if (category === "Social comparison") {
+    return {
+      icon: "↔",
+      description:
+        "Other people’s timelines may be making your own path feel delayed or insufficient.",
+    };
+  }
+
+  if (category === "Perfectionism") {
+    return {
+      icon: "◎",
+      description:
+        "The mind may be demanding a flawless result instead of a responsible next step.",
+    };
+  }
+
+  if (category === "External validation") {
+    return {
+      icon: "★",
+      description:
+        "The outcome may feel tied to being respected, chosen, admired, or recognized.",
+    };
+  }
+
+  if (category === "Identity pressure") {
+    return {
+      icon: "◍",
+      description:
+        "The situation may be starting to feel like a verdict on who you are.",
+    };
+  }
+
+  if (category === "Emotional overload") {
+    return {
+      icon: "!",
+      description:
+        "The pressure may be too mixed together right now, making it hard to think clearly.",
+    };
+  }
+
+  if (category === "Burnout signs") {
+    return {
+      icon: "↓",
+      description:
+        "The pressure may include depletion, tiredness, or the need for recovery before more effort.",
+    };
+  }
+
+  return {
+    icon: "?",
+    description:
+      "The pressure is not fully clear yet. The next step is to keep separating facts, fears, and meaning.",
+  };
 }
