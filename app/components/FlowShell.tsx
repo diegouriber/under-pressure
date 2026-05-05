@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import JourneyMap from "./JourneyMap";
 
@@ -5,8 +7,8 @@ type FlowShellProps = {
   eyebrow: string;
   title: string;
   description: string;
-  step?: number;
-  totalSteps?: number;
+  step: number;
+  totalSteps: number;
   children: React.ReactNode;
 };
 
@@ -15,100 +17,68 @@ export default function FlowShell({
   title,
   description,
   step,
-  totalSteps = 8,
+  totalSteps,
   children,
 }: FlowShellProps) {
-  const showProgress = Boolean(step && totalSteps);
-  const progress =
-    step && totalSteps ? Math.min(100, Math.round((step / totalSteps) * 100)) : 0;
+  const progress = Math.round((step / totalSteps) * 100);
 
   return (
-    <main className="min-h-screen bg-[#fdfaf4] text-[#1f1f1f]">
-      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-5 py-6 sm:px-8 lg:px-10">
-        <header className="mb-8 flex items-center justify-between gap-4">
-          <Link href="/" className="group flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#1f1f1f] text-lg font-semibold text-white shadow-sm transition group-hover:scale-105">
-              UP
-            </div>
+    <main className="min-h-screen bg-[#fdfaf4] px-5 py-6 text-[#1f1f1f] md:px-8 md:py-8">
+      <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[320px_1fr]">
+        <div className="hidden lg:block">
+          <div className="sticky top-8">
+            <JourneyMap />
+          </div>
+        </div>
 
-            <div>
-              <p className="text-sm font-semibold leading-none text-[#1f1f1f]">
-                Under Pressure
-              </p>
-              <p className="mt-1 text-xs text-[#777]">
-                Evidence-informed reflection
-              </p>
-            </div>
-          </Link>
+        <section className="min-w-0">
+          <div className="rounded-[2.5rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-10">
+            <div className="flex flex-col gap-5 border-b border-[#1f1f1f]/10 pb-8 md:flex-row md:items-start md:justify-between">
+              <div className="max-w-3xl">
+                <Link
+                  href="/"
+                  className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a5c3a] transition hover:text-[#1f1f1f]"
+                >
+                  Under Pressure
+                </Link>
 
-          {showProgress && (
-            <div className="hidden min-w-[180px] sm:block">
-              <div className="flex items-center justify-between text-xs font-medium text-[#777]">
-                <span>
+                <p className="mt-8 text-sm font-semibold uppercase tracking-[0.2em] text-[#7a5c3a]">
+                  {eyebrow}
+                </p>
+
+                <h1 className="mt-4 text-4xl font-semibold leading-[1.02] tracking-[-0.06em] text-[#1f1f1f] md:text-6xl">
+                  {title}
+                </h1>
+
+                <p className="mt-5 max-w-2xl text-base leading-8 text-[#555]">
+                  {description}
+                </p>
+              </div>
+
+              <div className="rounded-3xl bg-[#f6f1e8] p-5 md:w-52">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
                   Step {step} of {totalSteps}
-                </span>
-                <span>{progress}%</span>
-              </div>
+                </p>
 
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#efe7d8]">
-                <div
-                  className="h-full rounded-full bg-[#1f1f1f] transition-all"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
-          )}
-        </header>
-
-        <section className="grid flex-1 gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
-          <aside className="lg:sticky lg:top-8">
-            <div className="overflow-hidden rounded-[2rem] border border-[#1f1f1f]/10 bg-white shadow-sm">
-              <div className="relative min-h-[360px] bg-[#1f1f1f] p-7 text-white">
-                <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10" />
-                <div className="absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-[#c9a66b]/20" />
-
-                <div className="relative z-10">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/50">
-                    {eyebrow}
-                  </p>
-
-                  <h1 className="mt-5 text-4xl font-semibold leading-[1.05] tracking-[-0.04em] sm:text-5xl">
-                    {title}
-                  </h1>
-
-                  <p className="mt-5 max-w-xl text-base leading-8 text-white/70">
-                    {description}
-                  </p>
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#e5d8c6]">
+                  <div
+                    className="h-full rounded-full bg-[#1f1f1f] transition-all"
+                    style={{ width: `${progress}%` }}
+                  />
                 </div>
 
-                {showProgress && (
-                  <div className="relative z-10 mt-8">
-                    <JourneyMap currentStep={step} totalSteps={totalSteps} />
-                  </div>
-                )}
+                <p className="mt-3 text-xs leading-5 text-[#666]">
+                  {progress}% through the reflection.
+                </p>
               </div>
-
-              {showProgress && (
-                <div className="border-t border-[#1f1f1f]/10 bg-[#f6f1e8] p-5 sm:hidden">
-                  <div className="flex items-center justify-between text-xs font-medium text-[#777]">
-                    <span>
-                      Step {step} of {totalSteps}
-                    </span>
-                    <span>{progress}%</span>
-                  </div>
-
-                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#e5dccb]">
-                    <div
-                      className="h-full rounded-full bg-[#1f1f1f] transition-all"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                </div>
-              )}
             </div>
-          </aside>
 
-          <section className="pb-12">{children}</section>
+            <div className="mt-8 lg:hidden">
+              <JourneyMap />
+            </div>
+
+            <div className="mt-8">{children}</div>
+          </div>
         </section>
       </div>
     </main>
