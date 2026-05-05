@@ -27,6 +27,7 @@ export type ControlMap = {
 };
 
 export type UnderPressureSession = {
+  name: string;
   mood: Mood;
   intensity: string;
   pressureText: string;
@@ -35,6 +36,7 @@ export type UnderPressureSession = {
   wiseEffortAction: string;
   releaseStatement: string;
   createdAt?: string;
+  updatedAt?: string;
 };
 
 export type PressureAnalysis = {
@@ -48,10 +50,11 @@ export type PressureAnalysis = {
   severeDistressFlag: boolean;
 };
 
-const STORAGE_KEY = "under-pressure-session-v1";
+const STORAGE_KEY = "under-pressure-session-v2";
 
 export function getEmptySession(): UnderPressureSession {
   return {
+    name: "",
     mood: "",
     intensity: "",
     pressureText: "",
@@ -65,12 +68,19 @@ export function getEmptySession(): UnderPressureSession {
     wiseEffortAction: "",
     releaseStatement: "",
     createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 }
 
 export function saveSession(session: UnderPressureSession) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+
+  const nextSession = {
+    ...session,
+    updatedAt: new Date().toISOString(),
+  };
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(nextSession));
 }
 
 export function loadSession(): UnderPressureSession {
@@ -81,13 +91,15 @@ export function loadSession(): UnderPressureSession {
   if (!raw) return getEmptySession();
 
   try {
-    const parsed = JSON.parse(raw) as UnderPressureSession;
+    const parsed = JSON.parse(raw) as Partial<UnderPressureSession>;
+    const empty = getEmptySession();
 
     return {
-      ...getEmptySession(),
+      ...empty,
       ...parsed,
+      name: parsed.name || "",
       controlMap: {
-        ...getEmptySession().controlMap,
+        ...empty.controlMap,
         ...(parsed.controlMap || {}),
       },
     };
@@ -99,6 +111,36 @@ export function loadSession(): UnderPressureSession {
 export function clearSession() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(STORAGE_KEY);
+}
+
+export function updateStoredSession(
+  updates: Partial<UnderPressureSession>
+): UnderPressureSession {
+  const current = loadSession();
+
+  const next: UnderPressureSession = {
+    ...current,
+    ...updates,
+    controlMap: {
+      ...current.controlMap,
+      ...(updates.controlMap || {}),
+    },
+    updatedAt: new Date().toISOString(),
+  };
+
+  saveSession(next);
+  return next;
+}
+
+export function hasMinimumReflection(session: UnderPressureSession) {
+  return Boolean(
+    session.mood &&
+      session.intensity &&
+      session.pressureText.trim().length > 20 &&
+      session.attachmentText.trim().length > 15 &&
+      session.controlMap.control.trim().length > 5 &&
+      session.controlMap.release.trim().length > 5
+  );
 }
 
 function includesAny(text: string, words: string[]) {
@@ -294,36 +336,38 @@ function buildDominantPattern(
   categories: PressureCategory[],
   session: UnderPressureSession
 ) {
+  const name = session.name ? `${session.name}, ` : "";
+
   if (
     categories.includes("Material reality") &&
     categories.includes("Identity pressure")
   ) {
-    return "Your pressure seems to be moving from a real external concern into a question of personal worth. The situation may need action, but the emotional weight is coming from what the outcome appears to say about you.";
+    return `${name}your pressure seems to be moving from a real external concern into a question of personal worth. The situation may need action, but the emotional weight is coming from what the outcome appears to say about you.`;
   }
 
   if (
     categories.includes("Social comparison") &&
     categories.includes("Future uncertainty")
   ) {
-    return "Your pressure seems connected to comparison and future uncertainty. It may feel like other people are moving faster, and that their movement proves something about your own timeline.";
+    return `${name}your pressure seems connected to comparison and future uncertainty. It may feel like other people are moving faster, and that their movement proves something about your own timeline.`;
   }
 
   if (
     categories.includes("Family expectations") &&
     categories.includes("External validation")
   ) {
-    return "Your pressure seems tied to being seen as successful or acceptable by others. The external expectation may have become an internal demand.";
+    return `${name}your pressure seems tied to being seen as successful or acceptable by others. The external expectation may have become an internal demand.`;
   }
 
   if (categories.includes("Burnout signs")) {
-    return "Your pressure may not only be psychological. There are signs of depletion. The next step should include recovery, not just more effort.";
+    return `${name}your pressure may not only be psychological. There are signs of depletion. The next step should include recovery, not just more effort.`;
   }
 
   if (session.intensity === "5") {
-    return "The pressure feels very intense right now. Before solving anything, the first task is to slow the spiral and make the pressure more specific.";
+    return `${name}the pressure feels very intense right now. Before solving anything, the first task is to slow the spiral and make the pressure more specific.`;
   }
 
-  return "Your pressure appears to be layered. One part may be practical, one part emotional, and one part connected to what you fear the situation means about your future or identity.";
+  return `${name}your pressure appears to be layered. One part may be practical, one part emotional, and one part connected to what you fear the situation means about your future or identity.`;
 }
 
 function buildMaterialReality(categories: PressureCategory[]) {
