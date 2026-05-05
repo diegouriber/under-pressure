@@ -94,30 +94,61 @@ export default function FinalPage() {
           </section>
         )}
 
-        <section className="rounded-3xl bg-[#1f1f1f] p-6 text-white md:p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/50">
-            Your grounding statement
-          </p>
+        <section className="overflow-hidden rounded-[2rem] bg-[#1f1f1f] text-white shadow-sm">
+          <div className="grid gap-0 md:grid-cols-[0.9fr_1.1fr]">
+            <div className="relative min-h-[280px] bg-[#151515] p-6 md:p-8">
+              <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10" />
+              <div className="absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-[#c9a66b]/20" />
 
-          <h2 className="mt-4 text-2xl font-semibold leading-10">
-            {analysis.groundingStatement}
-          </h2>
+              <div className="relative z-10">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">
+                  Final artifact
+                </p>
 
-          <p className="mt-5 text-sm leading-7 text-white/70">
-            Material reality matters. Effort matters. Preparation matters. But
-            not every outcome is fully yours to command.
-          </p>
+                <div className="mt-8 space-y-4">
+                  <FinalNode number="1" label="Grounding" active />
+                  <FinalNode number="2" label="Wise effort" active />
+                  <FinalNode number="3" label="Release" active />
+                  <FinalNode number="4" label="Direction" />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 md:p-8">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">
+                Your grounding statement
+              </p>
+
+              <h2 className="mt-4 text-3xl font-semibold leading-10 tracking-[-0.04em]">
+                {analysis.groundingStatement}
+              </h2>
+
+              <p className="mt-6 text-sm leading-7 text-white/70">
+                Material reality matters. Effort matters. Preparation matters.
+                But not every outcome is fully yours to command.
+              </p>
+            </div>
+          </div>
         </section>
 
-        <div className="grid gap-5 md:grid-cols-2">
-          <section className="rounded-3xl bg-[#f6f1e8] p-6 md:p-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+        <section className="grid gap-5 md:grid-cols-2">
+          <div className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f6f1e8] text-xl text-[#1f1f1f]">
+              ▣
+            </div>
+
+            <p className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
               Wise effort action
             </p>
 
-            <h2 className="mt-3 text-2xl font-semibold text-[#1f1f1f]">
+            <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
               What is one grounded action you can take this week?
             </h2>
+
+            <p className="mt-3 text-sm leading-6 text-[#666]">
+              Choose an action that improves your position without demanding
+              certainty from the outcome.
+            </p>
 
             <textarea
               rows={6}
@@ -128,16 +159,25 @@ export default function FinalPage() {
               placeholder={buildWiseEffortPlaceholder(session)}
               className="mt-5 w-full resize-none rounded-2xl border border-[#1f1f1f]/10 bg-[#fdfaf4] p-4 text-sm leading-6 text-[#1f1f1f] outline-none transition placeholder:text-[#9a8f80] focus:border-[#7a5c3a]"
             />
-          </section>
+          </div>
 
-          <section className="rounded-3xl bg-[#f6f1e8] p-6 md:p-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+          <div className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f6f1e8] text-xl text-[#1f1f1f]">
+              ↓
+            </div>
+
+            <p className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
               Release statement
             </p>
 
-            <h2 className="mt-3 text-2xl font-semibold text-[#1f1f1f]">
+            <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
               What can you stop treating as fully yours to control?
             </h2>
+
+            <p className="mt-3 text-sm leading-6 text-[#666]">
+              This is the emotional weight you are practicing not carrying as a
+              verdict on yourself.
+            </p>
 
             <textarea
               rows={6}
@@ -148,88 +188,127 @@ export default function FinalPage() {
               placeholder={buildReleasePlaceholder(session)}
               className="mt-5 w-full resize-none rounded-2xl border border-[#1f1f1f]/10 bg-[#fdfaf4] p-4 text-sm leading-6 text-[#1f1f1f] outline-none transition placeholder:text-[#9a8f80] focus:border-[#7a5c3a]"
             />
-          </section>
-        </div>
-
-        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-            Final direction
-          </p>
-
-          <p className="mt-4 text-lg leading-8 text-[#3f3f3f]">
-            The goal is not to stop caring. The goal is to act with direction
-            while refusing to let uncertain outcomes become the full measure of
-            your peace, worth, or identity.
-          </p>
+          </div>
         </section>
 
-        <section>
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-            Reflection summary
-          </p>
+        <section className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+                Final direction
+              </p>
 
-          <div className="grid gap-4">
-            <SummaryCard
-              title="Context"
-              content={buildContextSummary(session)}
-              alwaysShow
-            />
-
-            <SummaryCard
-              title="Current emotional state"
-              content={`${session.mood || "Not selected"} · Intensity ${
-                session.intensity || "not selected"
-              }`}
-              alwaysShow
-            />
-
-            <SummaryCard
-              title="Pressure pattern"
-              content={analysis.dominantPattern}
-              alwaysShow
-            />
-
-            <SummaryCard
-              title="What was weighing on me"
-              content={session.pressureText}
-            />
-
-            <SummaryCard
-              title="Outcome I felt attached to"
-              content={session.attachmentText}
-            />
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <SummaryCard
-                title="What I can control"
-                content={session.controlMap.control}
-              />
-
-              <SummaryCard
-                title="What I can influence"
-                content={session.controlMap.influence}
-              />
-
-              <SummaryCard
-                title="What I can prepare for"
-                content={session.controlMap.preparation}
-              />
-
-              <SummaryCard
-                title="What I need to release"
-                content={session.controlMap.release}
-              />
+              <h2 className="mt-3 max-w-2xl text-3xl font-semibold leading-10 tracking-[-0.04em] text-[#1f1f1f]">
+                Care about the outcome. Do not let it become the full measure of
+                your life.
+              </h2>
             </div>
 
-            <SummaryCard
-              title="Wise effort action"
-              content={session.wiseEffortAction}
-            />
+            <div className="rounded-3xl bg-[#f6f1e8] p-5 md:max-w-xs">
+              <p className="text-sm leading-7 text-[#555]">
+                The goal is not to stop caring. The goal is to act with
+                direction while refusing to let uncertainty own your peace,
+                worth, or identity.
+              </p>
+            </div>
+          </div>
+        </section>
 
-            <SummaryCard
-              title="Release statement"
-              content={session.releaseStatement}
-            />
+        <section className="overflow-hidden rounded-[2rem] border border-[#1f1f1f]/10 bg-white shadow-sm">
+          <div className="border-b border-[#1f1f1f]/10 bg-[#f6f1e8] p-6 md:p-8">
+            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+                  Reflection artifact
+                </p>
+
+                <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[#1f1f1f]">
+                  Your pressure map summary
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={copyReflection}
+                className="rounded-full bg-[#1f1f1f] px-6 py-3 text-center text-sm font-semibold text-white transition hover:opacity-90"
+              >
+                {copied ? "Copied reflection" : "Copy reflection"}
+              </button>
+            </div>
+          </div>
+
+          <div className="p-6 md:p-8">
+            <div className="grid gap-4">
+              <ArtifactCard
+                title="Context"
+                content={buildContextSummary(session)}
+                alwaysShow
+              />
+
+              <ArtifactCard
+                title="Current emotional state"
+                content={`${session.mood || "Not selected"} · Intensity ${
+                  session.intensity || "not selected"
+                }`}
+                alwaysShow
+              />
+
+              <ArtifactCard
+                title="Detected pressure pattern"
+                content={analysis.dominantPattern}
+                alwaysShow
+                featured
+              />
+
+              <ArtifactCard
+                title="What was weighing on me"
+                content={session.pressureText}
+              />
+
+              <ArtifactCard
+                title="Outcome I felt attached to"
+                content={session.attachmentText}
+              />
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <ArtifactCard
+                  title="What I can control"
+                  content={session.controlMap.control}
+                />
+
+                <ArtifactCard
+                  title="What I can influence"
+                  content={session.controlMap.influence}
+                />
+
+                <ArtifactCard
+                  title="What I can prepare for"
+                  content={session.controlMap.preparation}
+                />
+
+                <ArtifactCard
+                  title="What I need to release"
+                  content={session.controlMap.release}
+                />
+              </div>
+
+              <ArtifactCard
+                title="Wise effort action"
+                content={session.wiseEffortAction}
+              />
+
+              <ArtifactCard
+                title="Release statement"
+                content={session.releaseStatement}
+              />
+
+              <ArtifactCard
+                title="Grounding"
+                content={analysis.groundingStatement}
+                alwaysShow
+                featured
+              />
+            </div>
           </div>
         </section>
 
@@ -262,26 +341,66 @@ export default function FinalPage() {
   );
 }
 
-function SummaryCard({
+function FinalNode({
+  number,
+  label,
+  active,
+}: {
+  number: string;
+  label: string;
+  active?: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] p-3">
+      <div
+        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
+          active ? "bg-[#e7c987] text-[#1f1f1f]" : "bg-white/15 text-white"
+        }`}
+      >
+        {number}
+      </div>
+
+      <p className="text-sm font-medium text-white/80">{label}</p>
+    </div>
+  );
+}
+
+function ArtifactCard({
   title,
   content,
   alwaysShow = false,
+  featured = false,
 }: {
   title: string;
   content?: string;
   alwaysShow?: boolean;
+  featured?: boolean;
 }) {
   const cleanContent = content?.trim();
 
   if (!alwaysShow && !cleanContent) return null;
 
   return (
-    <div className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+    <div
+      className={`rounded-3xl border p-6 ${
+        featured
+          ? "border-[#1f1f1f]/10 bg-[#1f1f1f] text-white"
+          : "border-[#1f1f1f]/10 bg-[#fdfaf4] text-[#1f1f1f]"
+      }`}
+    >
+      <p
+        className={`text-xs font-semibold uppercase tracking-[0.18em] ${
+          featured ? "text-white/45" : "text-[#7a5c3a]"
+        }`}
+      >
         {title}
       </p>
 
-      <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-[#444]">
+      <p
+        className={`mt-3 whitespace-pre-wrap text-sm leading-7 ${
+          featured ? "text-white/75" : "text-[#444]"
+        }`}
+      >
         {cleanContent || "This part has not been completed yet."}
       </p>
     </div>
