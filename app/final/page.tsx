@@ -6,7 +6,7 @@ import FlowShell from "../components/FlowShell";
 import {
   analyzePressure,
   clearSession,
-  hasMinimumReflection,
+  getMissingReflectionSteps,
   loadSession,
   saveSession,
   type UnderPressureSession,
@@ -31,7 +31,7 @@ export default function FinalPage() {
   }
 
   const analysis = analyzePressure(session);
-  const completeEnough = hasMinimumReflection(session);
+  const missingSteps = getMissingReflectionSteps(session);
   const finalReflection = buildFinalReflection(
     session,
     analysis.groundingStatement
@@ -60,7 +60,7 @@ export default function FinalPage() {
 
   function resetReflection() {
     clearSession();
-    window.location.href = "/";
+    window.location.assign("/");
   }
 
   const title = session.name
@@ -76,21 +76,31 @@ export default function FinalPage() {
       totalSteps={8}
     >
       <div className="space-y-8">
-        {!completeEnough && (
+        {missingSteps.length > 0 && (
           <section className="rounded-3xl border border-[#b54747]/20 bg-[#fff6f4] p-6">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#b54747]">
               ⚠️ Incomplete reflection
             </p>
 
             <h2 className="mt-3 text-2xl font-semibold text-[#1f1f1f]">
-              Some reflection steps are incomplete.
+              A few earlier sections are still missing.
             </h2>
 
             <p className="mt-3 text-sm leading-7 text-[#555]">
-              The final summary works best after completing the pressure,
-              attachment, control, and release sections. You can still finish
-              here, but some parts may be missing.
+              You can still finish, but the final artifact will be stronger if
+              these parts are completed:
             </p>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {missingSteps.map((step) => (
+                <span
+                  key={step}
+                  className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#b54747]"
+                >
+                  {step}
+                </span>
+              ))}
+            </div>
           </section>
         )}
 
@@ -145,11 +155,6 @@ export default function FinalPage() {
               What is one grounded action you can take this week?
             </h2>
 
-            <p className="mt-3 text-sm leading-6 text-[#666]">
-              Choose an action that improves your position without demanding
-              certainty from the outcome.
-            </p>
-
             <textarea
               rows={6}
               value={session.wiseEffortAction}
@@ -174,11 +179,6 @@ export default function FinalPage() {
               What can you stop treating as fully yours to control?
             </h2>
 
-            <p className="mt-3 text-sm leading-6 text-[#666]">
-              This is the emotional weight you are practicing not carrying as a
-              verdict on yourself.
-            </p>
-
             <textarea
               rows={6}
               value={session.releaseStatement}
@@ -192,26 +192,20 @@ export default function FinalPage() {
         </section>
 
         <section className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
-          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-                Final direction
-              </p>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+            Final direction
+          </p>
 
-              <h2 className="mt-3 max-w-2xl text-3xl font-semibold leading-10 tracking-[-0.04em] text-[#1f1f1f]">
-                Care about the outcome. Do not let it become the full measure of
-                your life.
-              </h2>
-            </div>
+          <h2 className="mt-3 max-w-2xl text-3xl font-semibold leading-10 tracking-[-0.04em] text-[#1f1f1f]">
+            Care about the outcome. Do not let it become the full measure of
+            your life.
+          </h2>
 
-            <div className="rounded-3xl bg-[#f6f1e8] p-5 md:max-w-xs">
-              <p className="text-sm leading-7 text-[#555]">
-                The goal is not to stop caring. The goal is to act with
-                direction while refusing to let uncertainty own your peace,
-                worth, or identity.
-              </p>
-            </div>
-          </div>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-[#555]">
+            The goal is not to stop caring. The goal is to act with direction
+            while refusing to let uncertainty own your peace, worth, or
+            identity.
+          </p>
         </section>
 
         <section className="overflow-hidden rounded-[2rem] border border-[#1f1f1f]/10 bg-white shadow-sm">
@@ -331,7 +325,7 @@ export default function FinalPage() {
           <button
             type="button"
             onClick={resetReflection}
-            className="rounded-full border border-[#1f1f1f]/20 px-7 py-4 text-center text-sm font-semibold text-[#1f1f1f] transition hover:bg-[#f6f1e8]"
+            className="rounded-full border border-[#b54747]/20 px-7 py-4 text-center text-sm font-semibold text-[#b54747] transition hover:bg-[#fff6f4]"
           >
             Start new reflection
           </button>

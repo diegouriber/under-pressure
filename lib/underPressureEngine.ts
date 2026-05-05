@@ -58,6 +58,12 @@ export type PressureAnalysis = {
 
 const STORAGE_KEY = "under-pressure-session-v2";
 
+const LEGACY_STORAGE_KEYS = [
+  "under-pressure-session",
+  "under-pressure-session-v1",
+  "under-pressure-session-v2",
+];
+
 export function getEmptySession(): UnderPressureSession {
   return {
     name: "",
@@ -87,7 +93,7 @@ export function getEmptySession(): UnderPressureSession {
 export function saveSession(session: UnderPressureSession) {
   if (typeof window === "undefined") return;
 
-  const nextSession = {
+  const nextSession: UnderPressureSession = {
     ...session,
     updatedAt: new Date().toISOString(),
   };
@@ -109,6 +115,12 @@ export function loadSession(): UnderPressureSession {
       ...empty,
       ...parsed,
       name: parsed.name || "",
+      mood: parsed.mood || "",
+      intensity: parsed.intensity || "",
+      pressureText: parsed.pressureText || "",
+      attachmentText: parsed.attachmentText || "",
+      wiseEffortAction: parsed.wiseEffortAction || "",
+      releaseStatement: parsed.releaseStatement || "",
       lifeStage: parsed.lifeStage || "",
       pressureDomain: parsed.pressureDomain || "",
       guidanceStyle: parsed.guidanceStyle || "",
@@ -117,6 +129,8 @@ export function loadSession(): UnderPressureSession {
         ...empty.controlMap,
         ...(parsed.controlMap || {}),
       },
+      createdAt: parsed.createdAt || empty.createdAt,
+      updatedAt: parsed.updatedAt || empty.updatedAt,
     };
   } catch {
     return getEmptySession();
@@ -126,7 +140,10 @@ export function loadSession(): UnderPressureSession {
 export function clearSession() {
   if (typeof window === "undefined") return;
 
-  localStorage.removeItem(STORAGE_KEY);
+  LEGACY_STORAGE_KEYS.forEach((key) => {
+    localStorage.removeItem(key);
+    sessionStorage.removeItem(key);
+  });
 }
 
 export function updateStoredSession(
@@ -148,15 +165,34 @@ export function updateStoredSession(
   return next;
 }
 
+export function getMissingReflectionSteps(session: UnderPressureSession) {
+  const missing: string[] = [];
+
+  if (!session.mood || !session.intensity) {
+    missing.push("Emotional check-in");
+  }
+
+  if (session.pressureText.trim().length < 20) {
+    missing.push("Name the pressure");
+  }
+
+  if (session.attachmentText.trim().length < 15) {
+    missing.push("Outcome attachment");
+  }
+
+  if (session.controlMap.control.trim().length < 5) {
+    missing.push("What you can control");
+  }
+
+  if (session.controlMap.release.trim().length < 5) {
+    missing.push("What you need to release");
+  }
+
+  return missing;
+}
+
 export function hasMinimumReflection(session: UnderPressureSession) {
-  return Boolean(
-    session.mood &&
-      session.intensity &&
-      session.pressureText.trim().length > 20 &&
-      session.attachmentText.trim().length > 15 &&
-      session.controlMap.control.trim().length > 5 &&
-      session.controlMap.release.trim().length > 5
-  );
+  return getMissingReflectionSteps(session).length === 0;
 }
 
 function includesAny(text: string, words: string[]) {
@@ -358,39 +394,39 @@ function buildDominantPattern(
 ) {
   const name = session.name ? `${session.name}, ` : "";
   const lifeStage = session.lifeStage
-    ? `As someone in the "${session.lifeStage}" stage, `
+    ? `as someone in the ${session.lifeStage.toLowerCase()} stage, `
     : "";
 
   if (
     categories.includes("Material reality") &&
     categories.includes("Identity pressure")
   ) {
-    return `${name}${lifeStage.toLowerCase()}your pressure seems to be moving from a real external concern into a question of personal worth. The situation may need action, but the emotional weight is coming from what the outcome appears to say about you.`;
+    return `${name}${lifeStage}your pressure seems to be moving from a real external concern into a question of personal worth. The situation may need action, but the emotional weight is coming from what the outcome appears to say about you.`;
   }
 
   if (
     categories.includes("Social comparison") &&
     categories.includes("Future uncertainty")
   ) {
-    return `${name}${lifeStage.toLowerCase()}your pressure seems connected to comparison and future uncertainty. It may feel like other people are moving faster, and that their movement proves something about your own timeline.`;
+    return `${name}${lifeStage}your pressure seems connected to comparison and future uncertainty. It may feel like other people are moving faster, and that their movement proves something about your own timeline.`;
   }
 
   if (
     categories.includes("Family expectations") &&
     categories.includes("External validation")
   ) {
-    return `${name}${lifeStage.toLowerCase()}your pressure seems tied to being seen as successful or acceptable by others. The external expectation may have become an internal demand.`;
+    return `${name}${lifeStage}your pressure seems tied to being seen as successful or acceptable by others. The external expectation may have become an internal demand.`;
   }
 
   if (categories.includes("Burnout signs")) {
-    return `${name}${lifeStage.toLowerCase()}your pressure may not only be psychological. There are signs of depletion. The next step should include recovery, not just more effort.`;
+    return `${name}${lifeStage}your pressure may not only be psychological. There are signs of depletion. The next step should include recovery, not just more effort.`;
   }
 
   if (session.intensity === "5") {
     return `${name}the pressure feels very intense right now. Before solving anything, the first task is to slow the spiral and make the pressure more specific.`;
   }
 
-  return `${name}${lifeStage.toLowerCase()}your pressure appears to be layered. One part may be practical, one part emotional, and one part connected to what you fear the situation means about your future or identity.`;
+  return `${name}${lifeStage}your pressure appears to be layered. One part may be practical, one part emotional, and one part connected to what you fear the situation means about your future or identity.`;
 }
 
 function buildMaterialReality(
@@ -417,7 +453,7 @@ function buildInnerEffect(
   session: UnderPressureSession
 ) {
   if (categories.includes("Identity pressure")) {
-    return `The outside pressure seems to be entering the inner self as a verdict: if this does not work out, it may feel like something is wrong with you. That is where the pressure becomes dangerous.`;
+    return "The outside pressure seems to be entering the inner self as a verdict: if this does not work out, it may feel like something is wrong with you. That is where the pressure becomes dangerous.";
   }
 
   if (categories.includes("Social comparison")) {
@@ -425,14 +461,18 @@ function buildInnerEffect(
   }
 
   if (categories.includes("Perfectionism")) {
-    return `The outside pressure seems to be entering as perfectionism. Instead of asking what is good enough for the next step, the mind may be demanding a flawless performance.`;
+    return "The outside pressure seems to be entering as perfectionism. Instead of asking what is good enough for the next step, the mind may be demanding a flawless performance.";
   }
 
   if (session.mood === "Numb") {
     return "The pressure may have become so constant that your system is protecting itself by going numb. Numbness is not laziness. It can be a sign that too much has been carried without enough processing.";
   }
 
-  return `The outside pressure seems to be affecting your inner self by making uncertainty feel personal. The situation is not only asking for action; it is asking for emotional separation.`;
+  if (session.guidanceStyle === "Calm and grounding") {
+    return "The outside pressure seems to be affecting your inner self by making uncertainty feel bigger than the present moment. The task is to return to what is real, name what can be acted on, and stop treating every unknown as an emergency.";
+  }
+
+  return "The outside pressure seems to be affecting your inner self by making uncertainty feel personal. The situation is not only asking for action; it is asking for emotional separation.";
 }
 
 function buildAttachmentInsight(
@@ -444,7 +484,7 @@ function buildAttachmentInsight(
   }
 
   if (categories.includes("External validation")) {
-    return `You may not only want the outcome. You may want the recognition, respect, or validation that you believe the outcome would give you.`;
+    return "You may not only want the outcome. You may want the recognition, respect, or validation that you believe the outcome would give you.";
   }
 
   if (categories.includes("Future uncertainty")) {
@@ -463,7 +503,7 @@ function buildAttachmentInsight(
     return "The attachment is probably not just to the result itself. It may be attached to a deeper need for proof, safety, belonging, recognition, or permission to feel enough.";
   }
 
-  return `The attachment is probably not just to the result. It is to what the result represents: security, proof, belonging, status, relief, or permission to feel okay.`;
+  return "The attachment is probably not just to the result. It is to what the result represents: security, proof, belonging, status, relief, or permission to feel okay.";
 }
 
 function buildControlPrompt(
@@ -475,11 +515,11 @@ function buildControlPrompt(
   }
 
   if (categories.includes("Social comparison")) {
-    return `Separate your path from other people’s timelines. What action belongs to your life, not to the race you are imagining?`;
+    return "Separate your path from other people’s timelines. What action belongs to your life, not to the race you are imagining?";
   }
 
   if (categories.includes("Burnout signs")) {
-    return `Include recovery as a responsible action. What would help you regain enough energy to act wisely?`;
+    return "Include recovery as a responsible action. What would help you regain enough energy to act wisely?";
   }
 
   if (session.guidanceStyle === "Direct and practical") {
@@ -506,7 +546,7 @@ function buildGroundingStatement(
   }
 
   if (session.mood === "Overwhelmed") {
-    return `I do not need to solve the whole future right now. I only need to name the next honest step.`;
+    return "I do not need to solve the whole future right now. I only need to name the next honest step.";
   }
 
   if (session.guidanceStyle === "Calm and grounding") {
