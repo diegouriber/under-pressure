@@ -32,20 +32,11 @@ const guidanceStyles = [
   "Balanced",
 ];
 
-const genders = [
-  "Male",
-  "Female",
-  "Non-binary",
-  "Prefer not to say",
-  "Other",
-];
-
 export default function ContextPage() {
   const [name, setName] = useState("");
   const [lifeStage, setLifeStage] = useState("");
   const [pressureDomain, setPressureDomain] = useState("");
   const [guidanceStyle, setGuidanceStyle] = useState("");
-  const [gender, setGender] = useState("");
 
   useEffect(() => {
     const session = loadSession();
@@ -54,8 +45,9 @@ export default function ContextPage() {
     setLifeStage(session.lifeStage || "");
     setPressureDomain(session.pressureDomain || "");
     setGuidanceStyle(session.guidanceStyle || "");
-    setGender(session.gender || "");
   }, []);
+
+  const canContinue = Boolean(lifeStage && pressureDomain && guidanceStyle);
 
   function saveContext() {
     updateStoredSession({
@@ -63,27 +55,26 @@ export default function ContextPage() {
       lifeStage,
       pressureDomain,
       guidanceStyle,
-      gender,
     });
   }
 
   return (
     <FlowShell
       eyebrow="Context"
-      title="Give this reflection a little context."
-      description="This helps the guidance respond to your actual pressure, not a generic version of it. Keep it light. The goal is relevance, not a full profile."
+      title="Give the reflection enough context to speak to your actual life."
+      description="This is not a profile or diagnosis. It is lightweight context so the prompts feel more relevant and less generic."
       step={2}
       totalSteps={8}
     >
       <div className="space-y-8">
-        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
-          <label className="block text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+        <section className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
+          <label className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
             What should we call you?
           </label>
 
-          <p className="mt-3 text-sm leading-6 text-[#555]">
-            A name makes the reflection feel more personal.
-          </p>
+          <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
+            A name is optional, but it can make the reflection feel more human.
+          </h2>
 
           <input
             value={name}
@@ -95,7 +86,7 @@ export default function ContextPage() {
 
         <OptionSection
           title="Current life stage / role"
-          description="Pressure feels different depending on where you are standing."
+          description="The same pressure can feel different depending on where you are in life."
           options={lifeStages}
           selected={lifeStage}
           onSelect={setLifeStage}
@@ -103,7 +94,7 @@ export default function ContextPage() {
 
         <OptionSection
           title="Main pressure domain"
-          description="Choose the area that feels most active right now."
+          description="Choose the area that feels most active right now. You can still write about anything later."
           options={pressureDomains}
           selected={pressureDomain}
           onSelect={setPressureDomain}
@@ -111,38 +102,43 @@ export default function ContextPage() {
 
         <OptionSection
           title="Preferred guidance style"
-          description="This shapes the tone of the reflection."
+          description="This changes the tone of the reflection, not the safety boundaries."
           options={guidanceStyles}
           selected={guidanceStyle}
           onSelect={setGuidanceStyle}
         />
 
-        <OptionSection
-          title="Optional identity context"
-          description="Skip this if it does not feel relevant."
-          options={genders}
-          selected={gender}
-          onSelect={setGender}
-        />
-
-        <div className="rounded-3xl bg-[#f6f1e8] p-6">
-          <h2 className="font-semibold text-[#1f1f1f]">Why this matters</h2>
-
-          <p className="mt-3 text-sm leading-6 text-[#555]">
-            The same pressure can feel different for a student, a founder, a
-            worker, or someone between things. This context helps the reflection
-            stay practical, grounded, and specific.
+        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+            Why this matters
           </p>
-        </div>
+
+          <p className="mt-3 text-sm leading-7 text-[#555]">
+            Context keeps the tool from giving generic advice. It helps later
+            prompts speak to the kind of pressure you are actually carrying:
+            academic, career, family, financial, social, relational, health, or
+            future uncertainty.
+          </p>
+        </section>
 
         <div className="flex flex-col gap-4 sm:flex-row">
-          <Link
-            href="/check-in"
-            onClick={saveContext}
-            className="rounded-full bg-[#1f1f1f] px-7 py-4 text-center text-sm font-semibold text-white transition hover:opacity-90"
-          >
-            Continue
-          </Link>
+          {canContinue ? (
+            <Link
+              href="/check-in"
+              onClick={saveContext}
+              className="rounded-full bg-[#1f1f1f] px-7 py-4 text-center text-sm font-semibold text-white transition hover:opacity-90"
+            >
+              Continue
+            </Link>
+          ) : (
+            <button
+              type="button"
+              disabled
+              className="cursor-not-allowed rounded-full bg-[#1f1f1f]/40 px-7 py-4 text-center text-sm font-semibold text-white"
+            >
+              Choose context to continue
+            </button>
+          )}
 
           <Link
             href="/scope"
@@ -170,16 +166,14 @@ function OptionSection({
   onSelect: (value: string) => void;
 }) {
   return (
-    <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
-      <div>
-        <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-          {title}
-        </h2>
+    <section className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
+      <h2 className="text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
+        {title}
+      </h2>
 
-        <p className="mt-3 text-sm leading-6 text-[#555]">{description}</p>
-      </div>
+      <p className="mt-3 text-sm leading-7 text-[#555]">{description}</p>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+      <div className="mt-5 grid gap-3 md:grid-cols-2">
         {options.map((option) => {
           const isSelected = selected === option;
 
