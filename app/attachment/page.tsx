@@ -4,20 +4,17 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import FlowShell from "../components/FlowShell";
 import {
+  getOutcomeDependentText,
   loadSession,
   saveSession,
   type UnderPressureSession,
 } from "@/lib/underPressureEngine";
 
-type SessionWithOutcome = UnderPressureSession & {
-  outcomeText?: string;
-};
-
-export default function AttachmentPage() {
-  const [session, setSession] = useState<SessionWithOutcome | null>(null);
+export default function OutcomeDependentThinkingPage() {
+  const [session, setSession] = useState<UnderPressureSession | null>(null);
 
   useEffect(() => {
-    setSession(loadSession() as SessionWithOutcome);
+    setSession(loadSession());
   }, []);
 
   if (!session) {
@@ -30,15 +27,18 @@ export default function AttachmentPage() {
     );
   }
 
-  const outcomeText = session.outcomeText ?? "";
-  const canContinue = outcomeText.trim().length >= 20;
+  const outcomeDependentText = getOutcomeDependentText(session);
+  const canContinue = outcomeDependentText.trim().length >= 20;
 
-  function updateOutcomeText(nextText: string) {
+  function updateOutcomeDependentText(value: string) {
     if (!session) return;
 
-    const nextSession: SessionWithOutcome = {
+    const nextSession: UnderPressureSession = {
       ...session,
-      outcomeText: nextText,
+      outcomeDependentText: value,
+
+      // Legacy mirror so older artifact logic never breaks during migration.
+      attachmentText: value,
     };
 
     setSession(nextSession);
@@ -63,17 +63,33 @@ export default function AttachmentPage() {
       <div className="space-y-8">
         <section className="rounded-[2rem] bg-[#1f1f1f] p-6 text-white shadow-sm md:p-8">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">
-            Reflection prompt
+            Reflection frame
           </p>
 
-          <h2 className="mt-4 text-2xl font-semibold leading-10 tracking-[-0.03em]">
-            {prompt}
+          <h2 className="mt-4 max-w-3xl text-3xl font-semibold leading-[1.2] tracking-[-0.04em] md:text-4xl">
+            Sometimes the result is not the only thing we want. We want what the
+            result would seem to prove.
           </h2>
 
           <p className="mt-5 max-w-2xl text-sm leading-7 text-white/70">
-            The goal is not to stop caring about the outcome. The goal is to
-            notice when the outcome starts carrying more emotional meaning than
-            it should.
+            The goal is not to stop caring. The goal is to notice when an
+            uncertain outcome starts acting like a verdict on your worth,
+            direction, or identity.
+          </p>
+        </section>
+
+        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+            Reflection prompt
+          </p>
+
+          <h2 className="mt-4 text-2xl font-semibold leading-9 tracking-[-0.03em] text-[#1f1f1f]">
+            {prompt}
+          </h2>
+
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-[#555]">
+            Try to write about the meaning underneath the outcome, not only the
+            outcome itself.
           </p>
         </section>
 
@@ -81,13 +97,13 @@ export default function AttachmentPage() {
           <GuideCard
             label="Question 1"
             title="What result feels loaded?"
-            text="Name the specific outcome that feels emotionally heavy: a grade, job, response, approval, deadline, performance, or future result."
+            text="Name the specific outcome: a grade, job, response, approval, deadline, performance, or future result."
           />
 
           <GuideCard
             label="Question 2"
             title="What would success prove?"
-            text="Notice what you hope the outcome would prove about you: that you are capable, respected, safe, on track, or worthy."
+            text="Notice what you hope the outcome would prove: that you are capable, respected, safe, on track, or worthy."
           />
 
           <GuideCard
@@ -110,14 +126,15 @@ export default function AttachmentPage() {
             </div>
 
             <p className="max-w-sm text-sm leading-6 text-[#666]">
-              Focus on meaning, not just the result itself.
+              Focus on proof, fear, approval, security, identity, or permission
+              to feel okay.
             </p>
           </div>
 
           <textarea
             rows={9}
-            value={outcomeText}
-            onChange={(event) => updateOutcomeText(event.target.value)}
+            value={outcomeDependentText}
+            onChange={(event) => updateOutcomeDependentText(event.target.value)}
             placeholder={placeholder}
             className="mt-6 w-full resize-none rounded-3xl border border-[#1f1f1f]/10 bg-[#fdfaf4] p-5 text-base leading-7 text-[#1f1f1f] outline-none transition placeholder:text-[#9a8f80] focus:border-[#7a5c3a]"
           />
@@ -209,7 +226,7 @@ function GuideCard({
   );
 }
 
-function buildOutcomePrompt(session: SessionWithOutcome) {
+function buildOutcomePrompt(session: UnderPressureSession) {
   const domain = session.pressureDomain;
 
   if (domain === "School / academic performance") {
@@ -235,7 +252,7 @@ function buildOutcomePrompt(session: SessionWithOutcome) {
   return "What outcome feels emotionally loaded, and what would it seem to prove about you if it went well or badly?";
 }
 
-function buildPlaceholder(session: SessionWithOutcome) {
+function buildPlaceholder(session: UnderPressureSession) {
   const domain = session.pressureDomain;
 
   if (domain === "Family expectations") {
