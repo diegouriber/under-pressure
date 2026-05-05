@@ -1,94 +1,183 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import FlowShell from "../components/FlowShell";
+import {
+  analyzePressure,
+  loadSession,
+  type PressureCategory,
+  type UnderPressureSession,
+} from "@/lib/underPressureEngine";
+
 export default function SummaryPage() {
-  return (
-    <main className="min-h-screen bg-[#f6f1e8] text-[#1f1f1f]">
-      <section className="mx-auto flex min-h-screen max-w-5xl flex-col justify-center px-6 py-16">
-        <div className="rounded-[2rem] bg-white/75 p-8 shadow-sm md:p-12">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-[#7a5c3a]">
-            Step 3 · Pressure Pattern Summary
-          </p>
+  const [session, setSession] = useState<UnderPressureSession | null>(null);
 
-          <h1 className="text-4xl font-semibold tracking-tight md:text-6xl">
-            Your pressure may not be one thing. It may be a pattern.
-          </h1>
+  useEffect(() => {
+    setSession(loadSession());
+  }, []);
 
-          <p className="mt-6 max-w-3xl text-lg leading-8 text-[#4a4a4a]">
-            Based on what you shared, this reflection points toward three layers:
-            practical pressure, future uncertainty, and the fear that an outcome
-            will define your worth.
-          </p>
-
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
-            <div className="rounded-3xl bg-[#f6f1e8] p-6">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-                Layer 1
-              </p>
-              <h2 className="mt-3 text-xl font-semibold">Material reality</h2>
-              <p className="mt-3 text-sm leading-6 text-[#555]">
-                Some of the pressure is practical. It may involve money, grades,
-                work, housing, family expectations, or future stability. This
-                part deserves clear action, not avoidance.
-              </p>
-            </div>
-
-            <div className="rounded-3xl bg-[#f6f1e8] p-6">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-                Layer 2
-              </p>
-              <h2 className="mt-3 text-xl font-semibold">Future uncertainty</h2>
-              <p className="mt-3 text-sm leading-6 text-[#555]">
-                Some of the pressure comes from trying to mentally solve a life
-                that has not happened yet. The uncertainty feels like danger,
-                even when the present moment is still survivable.
-              </p>
-            </div>
-
-            <div className="rounded-3xl bg-[#f6f1e8] p-6">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-                Layer 3
-              </p>
-              <h2 className="mt-3 text-xl font-semibold">Identity pressure</h2>
-              <p className="mt-3 text-sm leading-6 text-[#555]">
-                The heaviest part may be what the outcome seems to prove: that
-                you are capable, respected, on track, or not falling behind.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-10 rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 md:p-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-              Reflective interpretation
-            </p>
-
-            <p className="mt-4 text-lg leading-8 text-[#3f3f3f]">
-              Your pressure seems to come from more than the situation itself.
-              Part of it is real and deserves planning. Part of it is projection.
-              Part of it is comparison. And part of it is the fear that if this
-              outcome does not go your way, it says something final about you.
-            </p>
-
-            <p className="mt-4 text-lg leading-8 text-[#3f3f3f]">
-              The next step is not to stop caring. The next step is to separate
-              what requires effort from what requires release.
-            </p>
-          </div>
-
-          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-            <a
-              href="/attachment"
-              className="rounded-full bg-[#1f1f1f] px-7 py-4 text-center text-sm font-semibold text-white transition hover:opacity-90"
-            >
-              Explore the attachment
-            </a>
-
-            <a
-              href="/pressure"
-              className="rounded-full border border-[#1f1f1f]/20 px-7 py-4 text-center text-sm font-semibold transition hover:bg-[#f6f1e8]"
-            >
-              Back
-            </a>
-          </div>
+  if (!session) {
+    return (
+      <main className="min-h-screen bg-[#fdfaf4] px-6 py-10 text-[#1f1f1f]">
+        <div className="mx-auto max-w-3xl rounded-3xl bg-white p-8 shadow-sm">
+          <p className="text-sm text-[#555]">Loading reflection...</p>
         </div>
-      </section>
-    </main>
+      </main>
+    );
+  }
+
+  const analysis = analyzePressure(session);
+
+  const title = session.name
+    ? `${session.name}, your pressure may not be one thing.`
+    : "Your pressure may not be one thing.";
+
+  return (
+    <FlowShell
+      eyebrow="Pressure pattern summary"
+      title={title}
+      description="This is not a diagnosis. It is a structured reflection based on what you wrote, your emotional check-in, and the context you gave."
+      step={5}
+      totalSteps={8}
+    >
+      <div className="space-y-8">
+        {analysis.severeDistressFlag && (
+          <section className="rounded-3xl border border-[#b54747]/20 bg-[#fff6f4] p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#b54747]">
+              ⚠️ Immediate support
+            </p>
+
+            <h2 className="mt-3 text-2xl font-semibold text-[#1f1f1f]">
+              This sounds heavier than a reflection tool should hold alone.
+            </h2>
+
+            <p className="mt-3 text-sm leading-7 text-[#555]">
+              If you might hurt yourself or feel in immediate danger, contact
+              emergency services, a crisis line, or a trusted person now. This
+              app can support reflection, but it is not crisis care.
+            </p>
+          </section>
+        )}
+
+        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+            Detected pressure patterns
+          </p>
+
+          <div className="mt-5 flex flex-wrap gap-3">
+            {analysis.categories.map((category) => (
+              <PressureChip key={category} category={category} />
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-3xl bg-[#f6f1e8] p-6 md:p-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+            Reflective interpretation
+          </p>
+
+          <h2 className="mt-3 text-2xl font-semibold leading-9 text-[#1f1f1f]">
+            {analysis.dominantPattern}
+          </h2>
+        </section>
+
+        <div className="grid gap-5 md:grid-cols-3">
+          <LayerCard
+            label="Layer 1"
+            title="Material reality"
+            content={analysis.materialReality}
+          />
+
+          <LayerCard
+            label="Layer 2"
+            title="Inner effect"
+            content={analysis.innerEffect}
+          />
+
+          <LayerCard
+            label="Layer 3"
+            title="Outcome attachment"
+            content={analysis.attachmentInsight}
+          />
+        </div>
+
+        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+            What this means
+          </p>
+
+          <p className="mt-4 text-base leading-8 text-[#444]">
+            The point is not to stop caring. The point is to care with more
+            separation. One part of the pressure may require effort. Another
+            part may require preparation. Another part may need to be released
+            because it is asking you to control what no person can fully
+            control.
+          </p>
+        </section>
+
+        <section className="rounded-3xl bg-[#1f1f1f] p-6 text-white md:p-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/55">
+            Next reflection
+          </p>
+
+          <h2 className="mt-3 text-2xl font-semibold">
+            What outcome are you attached to?
+          </h2>
+
+          <p className="mt-3 text-sm leading-7 text-white/70">
+            The next step is to name the result you feel you need before you are
+            allowed to feel okay. This is where pressure usually becomes
+            personal.
+          </p>
+        </section>
+
+        <div className="flex flex-col gap-4 sm:flex-row">
+          <Link
+            href="/attachment"
+            className="rounded-full bg-[#1f1f1f] px-7 py-4 text-center text-sm font-semibold text-white transition hover:opacity-90"
+          >
+            Explore the attachment
+          </Link>
+
+          <Link
+            href="/pressure"
+            className="rounded-full border border-[#1f1f1f]/20 px-7 py-4 text-center text-sm font-semibold text-[#1f1f1f] transition hover:bg-[#f6f1e8]"
+          >
+            Back
+          </Link>
+        </div>
+      </div>
+    </FlowShell>
+  );
+}
+
+function PressureChip({ category }: { category: PressureCategory }) {
+  return (
+    <span className="rounded-full border border-[#1f1f1f]/10 bg-[#f6f1e8] px-4 py-2 text-sm font-medium text-[#1f1f1f]">
+      {category}
+    </span>
+  );
+}
+
+function LayerCard({
+  label,
+  title,
+  content,
+}: {
+  label: string;
+  title: string;
+  content: string;
+}) {
+  return (
+    <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+        {label}
+      </p>
+
+      <h2 className="mt-3 text-xl font-semibold text-[#1f1f1f]">{title}</h2>
+
+      <p className="mt-4 text-sm leading-7 text-[#555]">{content}</p>
+    </section>
   );
 }
