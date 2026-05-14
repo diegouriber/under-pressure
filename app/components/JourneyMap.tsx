@@ -50,7 +50,9 @@ export default function JourneyMap() {
   const pathname = usePathname();
   const activeIndex = journeySteps.findIndex((step) => step.href === pathname);
   const safeActiveIndex = activeIndex === -1 ? 0 : activeIndex;
-  const progress = Math.round(((safeActiveIndex + 1) / journeySteps.length) * 100);
+  const progress = Math.round(
+    ((safeActiveIndex + 1) / journeySteps.length) * 100
+  );
 
   return (
     <aside className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-5 text-[#1f1f1f] shadow-sm">
@@ -79,17 +81,38 @@ export default function JourneyMap() {
         {journeySteps.map((step, index) => {
           const isActive = index === safeActiveIndex;
           const isComplete = index < safeActiveIndex;
+          const isFuture = index > safeActiveIndex;
+
+          if (isFuture) {
+            return (
+              <div
+                key={step.href}
+                className="grid cursor-not-allowed grid-cols-[auto_1fr] gap-3 rounded-2xl bg-white p-3 opacity-55"
+                title="Complete the earlier steps first."
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f6f1e8] text-sm font-semibold text-[#7a5c3a]">
+                  {index + 1}
+                </div>
+
+                <div>
+                  <p className="text-sm font-semibold text-[#3f3f3f]">
+                    {step.label}
+                  </p>
+
+                  <p className="mt-1 text-xs leading-5 text-[#777]">
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+            );
+          }
 
           return (
             <Link
               key={step.href}
               href={step.href}
               className={`grid grid-cols-[auto_1fr] gap-3 rounded-2xl p-3 transition ${
-                isActive
-                  ? "bg-[#f6f1e8]"
-                  : isComplete
-                  ? "bg-white hover:bg-[#f6f1e8]"
-                  : "bg-white hover:bg-[#f6f1e8]"
+                isActive ? "bg-[#f6f1e8]" : "bg-white hover:bg-[#f6f1e8]"
               }`}
             >
               <div
@@ -124,11 +147,12 @@ export default function JourneyMap() {
 
       <div className="mt-6 rounded-2xl bg-[#fdfaf4] p-4">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-          Reminder
+          Saved in this browser
         </p>
 
         <p className="mt-2 text-sm leading-6 text-[#555]">
-          Reflection, not therapy. The goal is clarity, not perfection.
+          Your responses are saved in this browser session. Reflection, not
+          therapy. The goal is clarity, not perfection.
         </p>
       </div>
     </aside>
