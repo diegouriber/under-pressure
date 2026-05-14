@@ -16,11 +16,14 @@ import {
 } from "@/lib/underPressureEngine";
 
 export default function FinalPage() {
+  const [hasLoadedSession, setHasLoadedSession] = useState(false);
   const [session, setSession] = useState<UnderPressureSession | null>(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    setSession(loadSession());
+    const savedSession = loadSession();
+    setSession(savedSession);
+    setHasLoadedSession(true);
   }, []);
 
   const analysis = useMemo(() => {
@@ -28,11 +31,59 @@ export default function FinalPage() {
     return analyzePressure(session);
   }, [session]);
 
-  if (!session || !analysis) {
+  if (!hasLoadedSession) {
     return (
       <main className="min-h-screen bg-[#fdfaf4] px-6 py-10 text-[#1f1f1f]">
         <div className="mx-auto max-w-3xl rounded-3xl bg-white p-8 shadow-sm">
           <p className="text-sm text-[#555]">Loading reflection...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!session || !analysis) {
+    return (
+      <main className="min-h-screen bg-[#fdfaf4] px-6 py-10 text-[#1f1f1f]">
+        <div className="mx-auto flex min-h-[70vh] max-w-3xl items-center">
+          <section className="w-full rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+              No reflection found
+            </p>
+
+            <h1 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-[#1f1f1f] md:text-5xl">
+              It looks like you have not started a reflection yet.
+            </h1>
+
+            <p className="mt-5 max-w-2xl text-sm leading-7 text-[#555] md:text-base">
+              The final page is built from your saved responses in this browser
+              session. Start from the beginning so Under Pressure can help you
+              name the pressure, notice what the outcome represents, separate
+              what is controllable from what is not fully controllable, and
+              leave with one grounded next step.
+            </p>
+
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+              <Link
+                href="/scope"
+                className="rounded-full bg-[#1f1f1f] px-7 py-4 text-center text-sm font-semibold text-white transition hover:opacity-90"
+              >
+                Start reflection
+              </Link>
+
+              <Link
+                href="/"
+                className="rounded-full border border-[#1f1f1f]/20 px-7 py-4 text-center text-sm font-semibold text-[#1f1f1f] transition hover:bg-[#f6f1e8]"
+              >
+                Back to home
+              </Link>
+            </div>
+
+            <p className="mt-6 text-xs leading-6 text-[#777]">
+              Note: your responses are saved only in this browser session. This
+              tool is for evidence-informed reflection, not therapy, diagnosis,
+              or crisis support.
+            </p>
+          </section>
         </div>
       </main>
     );
