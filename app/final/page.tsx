@@ -26,10 +26,12 @@ export default function FinalPage() {
     setHasLoadedSession(true);
   }, []);
 
+  const hasStartedReflection = session ? sessionHasMeaningfulData(session) : false;
+
   const analysis = useMemo(() => {
-    if (!session) return null;
+    if (!session || !hasStartedReflection) return null;
     return analyzePressure(session);
-  }, [session]);
+  }, [session, hasStartedReflection]);
 
   if (!hasLoadedSession) {
     return (
@@ -41,7 +43,7 @@ export default function FinalPage() {
     );
   }
 
-  if (!session || !analysis) {
+  if (!session || !hasStartedReflection) {
     return (
       <main className="min-h-screen bg-[#fdfaf4] px-6 py-10 text-[#1f1f1f]">
         <div className="mx-auto flex min-h-[70vh] max-w-3xl items-center">
@@ -84,6 +86,16 @@ export default function FinalPage() {
               or crisis support.
             </p>
           </section>
+        </div>
+      </main>
+    );
+  }
+
+  if (!analysis) {
+    return (
+      <main className="min-h-screen bg-[#fdfaf4] px-6 py-10 text-[#1f1f1f]">
+        <div className="mx-auto max-w-3xl rounded-3xl bg-white p-8 shadow-sm">
+          <p className="text-sm text-[#555]">Loading reflection...</p>
         </div>
       </main>
     );
@@ -359,6 +371,24 @@ function MiniPrompt({ title, text }: { title: string; text: string }) {
       <p className="text-sm font-semibold text-[#1f1f1f]">{title}</p>
       <p className="mt-2 text-xs leading-5 text-[#666]">{text}</p>
     </div>
+  );
+}
+
+function sessionHasMeaningfulData(session: UnderPressureSession) {
+  return Boolean(
+    session.name.trim() ||
+      session.lifeStage.trim() ||
+      session.pressureDomain.trim() ||
+      session.guidanceStyle.trim() ||
+      session.mood.trim() ||
+      session.intensity.trim() ||
+      session.pressureText.trim() ||
+      getOutcomeDependentText(session).trim() ||
+      session.controlMap.control.trim() ||
+      session.controlMap.influence.trim() ||
+      session.controlMap.preparation.trim() ||
+      getNotFullyControllableText(session).trim() ||
+      getGroundedNextStep(session).trim()
   );
 }
 
