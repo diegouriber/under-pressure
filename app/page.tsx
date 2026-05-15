@@ -8,7 +8,7 @@ export default function HomePage() {
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-[#1f1f1f]/10 bg-white px-4 py-2 shadow-sm">
             <span className="h-2 w-2 rounded-full bg-[#1f1f1f]" />
             <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-              Reflective wellbeing tool
+              Evidence-informed reflection tool
             </span>
           </div>
 
@@ -17,9 +17,10 @@ export default function HomePage() {
           </h1>
 
           <p className="mt-8 max-w-2xl text-lg leading-8 text-[#555]">
-            Under Pressure helps you understand how external pressure becomes
-            inner pressure, where you may be attaching your peace to uncertain
-            outcomes, and what wise effort can look like right now.
+            Under Pressure helps you name what is weighing on you, notice what
+            the situation has started to mean, separate what is controllable
+            from what is not fully controllable, and leave with one grounded
+            next step.
           </p>
 
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">
@@ -47,14 +48,14 @@ export default function HomePage() {
 
             <ValueCard
               number="02"
-              title="Find the attachment"
-              text="Notice what outcome you feel you need before you can feel okay."
+              title="Notice the meaning"
+              text="See what the outcome has started to represent emotionally."
             />
 
             <ValueCard
               number="03"
               title="Leave with direction"
-              text="Choose effort where you have control and release what is not yours."
+              text="Choose one grounded next step inside your actual control."
             />
           </div>
         </div>
@@ -76,7 +77,7 @@ export default function HomePage() {
                 <div className="mt-6 space-y-4">
                   <FlowNode
                     label="External pressure"
-                    text="Grades, money, career, family, comparison, uncertainty."
+                    text="Grades, money, career, family, relationships, comparison, uncertainty."
                     active
                   />
 
@@ -91,30 +92,36 @@ export default function HomePage() {
                   <Connector />
 
                   <FlowNode
-                    label="Outcome attachment"
-                    text="Peace becomes tied to one result you cannot fully control."
+                    label="Meaning layer"
+                    text="The outcome starts feeling like proof of worth, safety, success, belonging, or direction."
                   />
 
                   <Connector />
 
                   <FlowNode
-                    label="Wise effort"
-                    text="Act clearly. Prepare honestly. Release what is not yours."
+                    label="Grounded next step"
+                    text="Act where action helps. Prepare where preparation helps. Stop trying to fully control what is not fully controllable."
                   />
                 </div>
               </div>
 
-              <div className="relative z-10 mt-5 grid gap-3 sm:grid-cols-2">
-                <MiniCard title="Not therapy" text="A guided reflection tool." />
-                <MiniCard title="Not diagnosis" text="Pattern-based prompts." />
-                <MiniCard
-                  title="Grounded"
-                  text="Material reality still matters."
-                />
-                <MiniCard
-                  title="Practical"
-                  text="Ends with one next action."
-                />
+              <div className="relative z-10 mt-5 rounded-[2rem] border border-white/10 bg-white/[0.06] p-5 backdrop-blur">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/45">
+                  Boundaries
+                </p>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <MiniCard title="Not therapy" text="A guided reflection tool." />
+                  <MiniCard title="Not diagnosis" text="Pressure patterns, not clinical labels." />
+                  <MiniCard
+                    title="Not crisis support"
+                    text="Immediate danger needs human help."
+                  />
+                  <MiniCard
+                    title="Practical ending"
+                    text="Ends with one grounded next step."
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -126,30 +133,85 @@ export default function HomePage() {
         className="mx-auto max-w-7xl px-5 pb-20 sm:px-8 lg:px-10"
       >
         <div className="rounded-[2.5rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-            How it works
-          </p>
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+              How it works
+            </p>
 
-          <div className="mt-8 grid gap-5 md:grid-cols-4">
+            <h2 className="mt-4 text-4xl font-semibold tracking-[-0.05em] text-[#1f1f1f] md:text-5xl">
+              The tool turns vague pressure into a clearer map.
+            </h2>
+
+            <p className="mt-5 text-base leading-8 text-[#555]">
+              This is not random journaling. Each step has a job: name the
+              context, identify the emotional state, describe the pressure,
+              notice patterns, explore what the outcome means, separate control,
+              and choose one grounded action.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-5 md:grid-cols-4">
             <StepCard
+              number="01"
               title="Context"
-              text="Give the reflection a little context so the guidance is not generic."
+              text="The app asks for lightweight context so the reflection can respond to your situation instead of speaking in generic advice."
             />
 
             <StepCard
+              number="02"
               title="Pressure"
-              text="Name what is actually weighing on you and what it seems to mean."
+              text="You describe what is happening and what you fear it means. This separates facts from interpretation."
             />
 
             <StepCard
-              title="Attachment"
-              text="Identify the outcome your peace may be depending on too strongly."
+              number="03"
+              title="Meaning"
+              text="The tool helps you notice when an uncertain result starts feeling like proof of your worth, safety, belonging, or direction."
             />
 
             <StepCard
-              title="Direction"
-              text="Separate control, influence, preparation, and release."
+              number="04"
+              title="Action"
+              text="You map direct control, partial influence, preparation, and what is not fully controllable, then leave with one grounded next step."
             />
+          </div>
+
+          <div className="mt-10 grid gap-5 lg:grid-cols-[1fr_0.85fr]">
+            <section className="rounded-[2rem] bg-[#f6f1e8] p-6 md:p-8">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+                The causal chain
+              </p>
+
+              <h3 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
+                Pressure usually gets heavier when the situation and the meaning
+                collapse into one.
+              </h3>
+
+              <div className="mt-6 grid gap-3 md:grid-cols-5 md:items-center">
+                <ChainItem title="Situation" text="What is happening." />
+                <ChainArrow />
+                <ChainItem title="Meaning" text="What it seems to prove." />
+                <ChainArrow />
+                <ChainItem title="Next step" text="What is actually yours." />
+              </div>
+            </section>
+
+            <section className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+                Safety boundary
+              </p>
+
+              <h3 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
+                Reflection, not treatment.
+              </h3>
+
+              <p className="mt-4 text-sm leading-7 text-[#555]">
+                Under Pressure does not diagnose, provide therapy, assess risk,
+                or replace professional support. If you are in immediate danger,
+                contact emergency services, a trusted person, or professional
+                support now.
+              </p>
+            </section>
           </div>
         </div>
       </section>
@@ -227,12 +289,41 @@ function MiniCard({ title, text }: { title: string; text: string }) {
   );
 }
 
-function StepCard({ title, text }: { title: string; text: string }) {
+function StepCard({
+  number,
+  title,
+  text,
+}: {
+  number: string;
+  title: string;
+  text: string;
+}) {
   return (
     <div className="rounded-3xl bg-[#f6f1e8] p-6">
-      <h3 className="text-lg font-semibold text-[#1f1f1f]">{title}</h3>
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+        {number}
+      </p>
+
+      <h3 className="mt-4 text-lg font-semibold text-[#1f1f1f]">{title}</h3>
 
       <p className="mt-3 text-sm leading-6 text-[#555]">{text}</p>
+    </div>
+  );
+}
+
+function ChainItem({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="rounded-3xl bg-white p-5 shadow-sm">
+      <h4 className="font-semibold text-[#1f1f1f]">{title}</h4>
+      <p className="mt-2 text-sm leading-6 text-[#555]">{text}</p>
+    </div>
+  );
+}
+
+function ChainArrow() {
+  return (
+    <div className="hidden text-center text-2xl font-semibold text-[#7a5c3a] md:block">
+      →
     </div>
   );
 }
