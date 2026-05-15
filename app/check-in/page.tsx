@@ -19,7 +19,28 @@ const moods: Mood[] = [
   "Okay, but pressured",
 ];
 
-const levels = ["1", "2", "3", "4", "5"];
+const levels = [
+  {
+    value: "1",
+    label: "Light",
+  },
+  {
+    value: "2",
+    label: "Noticeable",
+  },
+  {
+    value: "3",
+    label: "Moderate",
+  },
+  {
+    value: "4",
+    label: "Heavy",
+  },
+  {
+    value: "5",
+    label: "Very heavy",
+  },
+];
 
 export default function CheckInPage() {
   const [session, setSession] = useState<UnderPressureSession | null>(null);
@@ -52,6 +73,10 @@ export default function CheckInPage() {
   }
 
   const canContinue = Boolean(session.mood && session.intensity);
+
+  const selectedLevel = levels.find(
+    (level) => level.value === session.intensity
+  );
 
   const title = session.name
     ? `${session.name}, before naming the pressure, notice where you are.`
@@ -98,30 +123,35 @@ export default function CheckInPage() {
             How intense does the pressure feel?
           </h2>
 
-          <div className="mt-5 grid grid-cols-5 gap-3">
+          <div className="mt-5 grid gap-3 sm:grid-cols-5">
             {levels.map((level) => {
-              const selected = session.intensity === level;
+              const selected = session.intensity === level.value;
 
               return (
                 <button
-                  key={level}
+                  key={level.value}
                   type="button"
-                  onClick={() => updateSession({ intensity: level })}
-                  className={`rounded-2xl border px-5 py-4 text-center text-sm font-semibold transition ${
+                  onClick={() => updateSession({ intensity: level.value })}
+                  className={`rounded-2xl border px-3 py-4 text-center transition ${
                     selected
                       ? "border-[#1f1f1f] bg-[#1f1f1f] text-white"
                       : "border-[#1f1f1f]/10 bg-[#f6f1e8] text-[#1f1f1f] hover:bg-white"
                   }`}
                 >
-                  {level}
+                  <span className="block text-base font-semibold">
+                    {level.value}
+                  </span>
+
+                  <span
+                    className={`mt-1 block text-xs leading-5 ${
+                      selected ? "text-white/75" : "text-[#666]"
+                    }`}
+                  >
+                    {level.label}
+                  </span>
                 </button>
               );
             })}
-          </div>
-
-          <div className="mt-3 flex justify-between text-xs text-[#777]">
-            <span>Manageable</span>
-            <span>Very heavy</span>
           </div>
         </section>
 
@@ -135,7 +165,9 @@ export default function CheckInPage() {
             </span>
             , with pressure intensity{" "}
             <span className="font-semibold text-[#1f1f1f]">
-              {session.intensity || "not selected yet"}
+              {selectedLevel
+                ? `${selectedLevel.value} — ${selectedLevel.label}`
+                : "not selected yet"}
             </span>
             .
           </p>
