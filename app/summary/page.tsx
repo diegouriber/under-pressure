@@ -10,6 +10,15 @@ import {
   type UnderPressureSession,
 } from "@/lib/underPressureEngine";
 
+type PersonalizationDomain =
+  | "relationship"
+  | "academic"
+  | "career"
+  | "money"
+  | "family"
+  | "comparison"
+  | "general";
+
 export default function SummaryPage() {
   const [session, setSession] = useState<UnderPressureSession | null>(null);
 
@@ -28,19 +37,19 @@ export default function SummaryPage() {
   }
 
   const analysis = analyzePressure(session);
+  const contextSummary = buildContextSummary(session);
+  const domain = detectPersonalizationDomain(session);
+  const personalizedMeaning = buildPersonalizedMeaning(session, domain);
 
   const title = session.name
-    ? `${session.name}, your pressure may not be one thing.`
-    : "Your pressure may not be one thing.";
-
-  const contextSummary = buildContextSummary(session);
-  const personalizedMeaning = buildPersonalizedMeaning(session);
+    ? `${session.name}, here is what the app noticed.`
+    : "Here is what the app noticed.";
 
   return (
     <FlowShell
       eyebrow="Pressure pattern summary"
       title={title}
-      description="This is a structured reflection based on what you wrote, your emotional check-in, and the context you gave. These are reflection patterns, not diagnoses."
+      description="This page turns your reflection into a clearer pressure map. These are reflection clues, not diagnoses."
       step={5}
       totalSteps={8}
     >
@@ -48,7 +57,7 @@ export default function SummaryPage() {
         {analysis.severeDistressFlag && (
           <section className="rounded-3xl border border-[#b54747]/20 bg-[#fff6f4] p-6">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#b54747]">
-              ⚠️ Immediate support
+              Immediate support
             </p>
 
             <h2 className="mt-3 text-2xl font-semibold text-[#1f1f1f]">
@@ -63,43 +72,48 @@ export default function SummaryPage() {
           </section>
         )}
 
+        <section className="rounded-[2rem] bg-[#1f1f1f] p-6 text-white shadow-sm md:p-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/45">
+            What this step is for
+          </p>
+
+          <h2 className="mt-4 max-w-3xl text-3xl font-semibold leading-[1.2] tracking-[-0.04em] md:text-4xl">
+            Your pressure may have a practical layer, an emotional layer, and a
+            meaning layer.
+          </h2>
+
+          <p className="mt-5 max-w-2xl text-sm leading-7 text-white/70">
+            The app is not labeling you. It is organizing what you wrote so the
+            next step can explore what this situation has started to mean to
+            you.
+          </p>
+        </section>
+
         {contextSummary && (
           <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#f6f1e8] text-xl">
-                ◌
-              </div>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+              Context used
+            </p>
 
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-                  Context used
-                </p>
-
-                <p className="mt-3 text-sm leading-7 text-[#555]">
-                  {contextSummary}
-                </p>
-              </div>
-            </div>
+            <p className="mt-3 text-sm leading-7 text-[#555]">
+              {contextSummary}
+            </p>
           </section>
         )}
 
         <section className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
-          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-                Detected reflection patterns
-              </p>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+            Detected reflection patterns
+          </p>
 
-              <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
-                What the app noticed
-              </h2>
-            </div>
+          <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
+            What the app noticed
+          </h2>
 
-            <p className="max-w-sm text-sm leading-6 text-[#666]">
-              These are not clinical labels. They are clues for understanding
-              what kind of pressure may be active.
-            </p>
-          </div>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#666]">
+            These are not clinical labels. They are clues for understanding what
+            kind of pressure may be active.
+          </p>
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             {analysis.categories.map((category) => (
@@ -108,28 +122,26 @@ export default function SummaryPage() {
           </div>
         </section>
 
-        <section>
-          <div className="mb-5">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-              Three layers
-            </p>
+        <section className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+            Pressure map
+          </p>
 
-            <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[#1f1f1f]">
-              Separate the pressure into parts.
-            </h2>
-          </div>
+          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[#1f1f1f]">
+            Three layers to separate.
+          </h2>
 
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="mt-6 grid gap-5 md:grid-cols-3">
             <LayerCard
               label="Layer 1"
-              icon="▣"
+              icon="□"
               title="Practical layer"
               content={analysis.practicalLayer}
             />
 
             <LayerCard
               label="Layer 2"
-              icon="◍"
+              icon="○"
               title="Inner effect"
               content={analysis.innerEffect}
             />
@@ -137,40 +149,23 @@ export default function SummaryPage() {
             <LayerCard
               label="Layer 3"
               icon="◇"
-              title="Outcome-dependent thinking"
+              title="Meaning layer"
               content={analysis.outcomeDependentInsight}
             />
           </div>
         </section>
 
         <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#1f1f1f] text-xl text-white">
-              →
-            </div>
-
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-                What this means for this pressure
-              </p>
-
-              <p className="mt-4 text-base leading-8 text-[#444]">
-                {personalizedMeaning}
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-            Why this step matters
+            What this may mean
           </p>
 
-          <p className="mt-3 text-sm leading-7 text-[#555]">
-            Stress is not only shaped by what happens, but also by how we
-            interpret what happens and whether we believe we can respond. This
-            page organizes the pressure into possible patterns so the next step
-            can focus on what the outcome has started to mean.
+          <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
+            This is the bridge to the next step.
+          </h2>
+
+          <p className="mt-4 text-base leading-8 text-[#444]">
+            {personalizedMeaning}
           </p>
         </section>
 
@@ -180,22 +175,22 @@ export default function SummaryPage() {
           </p>
 
           <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[#1f1f1f]">
-            What result has become emotionally loaded?
+            What has this started to mean to you?
           </h2>
 
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[#555]">
-            The next step is to notice whether a specific outcome has started
-            acting like proof of your worth, safety, success, or direction.
+            The next step explores whether this situation has started to feel
+            like proof of your worth, safety, success, belonging, or direction.
           </p>
         </section>
 
         <div className="flex flex-col gap-4 sm:flex-row">
-          <a
+          <Link
             href="/attachment"
             className="rounded-full bg-[#1f1f1f] px-7 py-4 text-center text-sm font-semibold text-white transition hover:opacity-90"
           >
-            Explore outcome-dependent thinking
-          </a>
+            Continue to meaning reflection
+          </Link>
 
           <Link
             href="/pressure"
@@ -243,8 +238,8 @@ function LayerCard({
   content: string;
 }) {
   return (
-    <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f6f1e8] text-xl text-[#1f1f1f]">
+    <section className="rounded-3xl border border-[#1f1f1f]/10 bg-[#fdfaf4] p-6">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-xl text-[#1f1f1f]">
         {icon}
       </div>
 
@@ -276,45 +271,160 @@ function buildContextSummary(session: UnderPressureSession) {
 
   if (parts.length === 0) return "";
 
-  return `This summary is being shaped by your context: ${parts.join(
-    " · "
-  )}.`;
+  return `This summary is being shaped by your context: ${parts.join(" · ")}.`;
 }
 
-function buildPersonalizedMeaning(session: UnderPressureSession) {
-  const domain = session.pressureDomain;
-  const style = session.guidanceStyle;
+function detectPersonalizationDomain(
+  session: UnderPressureSession
+): PersonalizationDomain {
+  const combined = `
+    ${session.pressureDomain}
+    ${session.pressureText}
+    ${session.outcomeDependentText}
+    ${session.attachmentText}
+  `.toLowerCase();
 
-  if (style === "Direct and practical") {
-    return "The point is not to overanalyze the pressure. The point is to separate what needs action from what needs to stop controlling your emotional state.";
+  if (
+    includesAny(combined, [
+      "relationship",
+      "relationships",
+      "boyfriend",
+      "girlfriend",
+      "partner",
+      "dating",
+      "love",
+      "loved",
+      "reciprocate",
+      "reciprocity",
+      "affection",
+      "break up",
+      "last long",
+      "attention",
+      "valued",
+      "chosen",
+    ])
+  ) {
+    return "relationship";
   }
 
-  if (style === "Calm and grounding") {
-    return "The point is not to force instant clarity. The point is to slow the pressure down enough to see what is real, what is interpretation, and what next step is actually available.";
+  if (
+    includesAny(combined, [
+      "school",
+      "academic",
+      "exam",
+      "grade",
+      "university",
+      "study",
+      "studying",
+      "assignment",
+      "class",
+    ])
+  ) {
+    return "academic";
   }
 
-  if (style === "Reflective and deep") {
-    return "The point is not only to solve the surface problem. The deeper question is what this pressure has started to represent: proof, safety, belonging, success, approval, or identity.";
+  if (
+    includesAny(combined, [
+      "career",
+      "work",
+      "job",
+      "internship",
+      "interview",
+      "promotion",
+      "boss",
+      "salary",
+    ])
+  ) {
+    return "career";
   }
 
-  if (domain === "School / academic performance") {
+  if (
+    includesAny(combined, [
+      "money",
+      "financial",
+      "rent",
+      "debt",
+      "income",
+      "bills",
+      "stability",
+      "savings",
+    ])
+  ) {
+    return "money";
+  }
+
+  if (
+    includesAny(combined, [
+      "family",
+      "parents",
+      "mother",
+      "father",
+      "proud",
+      "disappoint",
+      "expectations",
+      "back home",
+    ])
+  ) {
+    return "family";
+  }
+
+  if (
+    includesAny(combined, [
+      "compare",
+      "comparison",
+      "others",
+      "peers",
+      "friends",
+      "timeline",
+      "behind",
+      "linkedin",
+      "instagram",
+    ])
+  ) {
+    return "comparison";
+  }
+
+  return "general";
+}
+
+function buildPersonalizedMeaning(
+  session: UnderPressureSession,
+  domain: PersonalizationDomain
+) {
+  if (domain === "relationship") {
+    return "This may involve a real relationship concern, but the emotional weight may also come from what the other person's response seems to prove: whether you are loved, valued, chosen, or carrying the relationship alone.";
+  }
+
+  if (domain === "academic") {
     return "This may involve real academic responsibilities, but the grade or performance outcome should not become the full measure of your intelligence, future, or worth.";
   }
 
-  if (domain === "Career / work") {
+  if (domain === "career") {
     return "This may involve real career action, but career uncertainty should not become a verdict on whether your life is moving correctly.";
   }
 
-  if (domain === "Money / financial stability") {
+  if (domain === "money") {
     return "This may involve real financial planning, but financial pressure becomes heavier when every unknown starts feeling like proof that you are unsafe or failing.";
   }
 
-  if (domain === "Family expectations") {
-    return "This may involve real family expectations, but another person’s approval cannot become the only place where your emotional stability is allowed to exist.";
+  if (domain === "family") {
+    return "This may involve real family expectations, but another person's approval cannot become the only place where your emotional stability is allowed to exist.";
   }
 
-  if (domain === "Social comparison") {
-    return "This may involve real ambition, but comparison becomes dangerous when other people’s timelines start replacing your own judgment.";
+  if (domain === "comparison") {
+    return "This may involve real ambition, but comparison becomes dangerous when other people's timelines start replacing your own judgment.";
+  }
+
+  if (session.guidanceStyle === "Direct and practical") {
+    return "The point is not to overanalyze the pressure. The point is to separate what needs action from what needs to stop controlling your emotional state.";
+  }
+
+  if (session.guidanceStyle === "Calm and grounding") {
+    return "The point is not to force instant clarity. The point is to slow the pressure down enough to see what is real, what is interpretation, and what next step is actually available.";
+  }
+
+  if (session.guidanceStyle === "Reflective and deep") {
+    return "The point is not only to solve the surface problem. The deeper question is what this pressure has started to represent: proof, safety, belonging, success, approval, or identity.";
   }
 
   return "The point is not to stop caring. The point is to care with more separation: act where action helps, prepare where preparation helps, and stop trying to fully control what is not fully controllable.";
@@ -323,7 +433,7 @@ function buildPersonalizedMeaning(session: UnderPressureSession) {
 function getPressureCategoryMeta(category: PressureCategory) {
   if (category === "Practical stressor") {
     return {
-      icon: "▣",
+      icon: "□",
       description:
         "There may be a real external issue here: school, work, money, health, relationships, deadlines, or responsibility.",
     };
@@ -331,7 +441,7 @@ function getPressureCategoryMeta(category: PressureCategory) {
 
   if (category === "Future uncertainty") {
     return {
-      icon: "⌁",
+      icon: "?",
       description:
         "The pressure is partly coming from trying to solve an unknown future before it has arrived.",
     };
@@ -349,7 +459,7 @@ function getPressureCategoryMeta(category: PressureCategory) {
     return {
       icon: "↔",
       description:
-        "Other people’s timelines may be making your own path feel delayed or insufficient.",
+        "Other people's timelines may be making your own path feel delayed or insufficient.",
     };
   }
 
@@ -371,7 +481,7 @@ function getPressureCategoryMeta(category: PressureCategory) {
 
   if (category === "Self-worth threat") {
     return {
-      icon: "◍",
+      icon: "○",
       description:
         "The situation may be starting to feel like a verdict on your capability, value, or identity.",
     };
@@ -398,4 +508,8 @@ function getPressureCategoryMeta(category: PressureCategory) {
     description:
       "The pressure is not fully clear yet. The next step is to keep separating facts, fears, and meaning.",
   };
+}
+
+function includesAny(text: string, words: string[]) {
+  return words.some((word) => text.includes(word));
 }
