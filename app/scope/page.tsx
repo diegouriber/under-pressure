@@ -60,11 +60,35 @@ export default function ScopePage() {
             <ul className="mt-4 space-y-3 text-sm leading-6 text-[#555]">
               <li>It cannot diagnose or treat mental health conditions.</li>
               <li>It cannot assess risk or replace professional care.</li>
-              <li>It cannot provide crisis support.</li>
+              <li>It cannot provide crisis or emergency support.</li>
               <li>It cannot guarantee outcomes or solve the whole situation.</li>
             </ul>
           </section>
         </div>
+
+        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+            How your reflection is used
+          </p>
+
+          <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
+            Your answers help the tool understand you better.
+          </h2>
+
+          <p className="mt-3 text-sm leading-7 text-[#555]">
+            Under Pressure asks for personal reflection because the experience
+            is meant to become more relevant to your situation. In this
+            prototype, responses are saved in your browser so the journey can
+            build on what you already wrote.
+          </p>
+
+          <p className="mt-3 text-sm leading-7 text-[#555]">
+            In the full Shifters ecosystem, reflections may be saved to your
+            profile to personalize your experience and help you understand your
+            own pressure patterns over time. They are not meant to be shared
+            with universities, employers, or third parties.
+          </p>
+        </section>
 
         <section className="rounded-3xl border border-[#b54747]/20 bg-[#fff6f4] p-6">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#b54747]">
@@ -79,18 +103,6 @@ export default function ScopePage() {
             Please contact emergency services, a trusted person, or a
             professional support service now. Under Pressure is not designed to
             hold crisis situations.
-          </p>
-        </section>
-
-        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-            Saved in this browser session
-          </p>
-
-          <p className="mt-3 text-sm leading-7 text-[#555]">
-            Your responses are saved locally in this browser session so you can
-            move through the reflection without losing your previous answers.
-            Do not enter anything you would not want saved on this device.
           </p>
         </section>
 
