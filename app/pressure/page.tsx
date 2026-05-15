@@ -84,6 +84,23 @@ export default function PressurePage() {
           </p>
         </section>
 
+        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+            Why this step matters
+          </p>
+
+          <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
+            Pressure gets clearer when facts and fears are separated.
+          </h2>
+
+          <p className="mt-3 text-sm leading-7 text-[#555]">
+            Stress is shaped not only by what happens, but also by how we
+            interpret what happens and whether we believe we can respond. This
+            step helps separate the situation from the meaning attached to it
+            before the reflection becomes too vague.
+          </p>
+        </section>
+
         <section>
           <div className="mb-5">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
@@ -97,13 +114,13 @@ export default function PressurePage() {
 
           <div className="grid gap-5 md:grid-cols-2">
             <GuideCard
-              icon="▣"
+              icon="□"
               title="Write the facts"
               text="What is actually happening? Focus on the situation, deadline, responsibility, conversation, decision, or uncertainty."
             />
 
             <GuideCard
-              icon="◍"
+              icon="○"
               title="Write the fear"
               text="What are you afraid this situation means about your future, capability, stability, relationships, or self-worth?"
             />
@@ -111,18 +128,16 @@ export default function PressurePage() {
         </section>
 
         <section className="rounded-[2rem] border border-[#1f1f1f]/10 bg-white p-6 shadow-sm md:p-8">
-          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-              <label className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-                Your reflection
-              </label>
+          <div>
+            <label className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
+              Your reflection
+            </label>
 
-              <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
-                Put the pressure into words.
-              </h2>
-            </div>
+            <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#1f1f1f]">
+              Put the pressure into words.
+            </h2>
 
-            <p className="max-w-sm text-sm leading-6 text-[#666]">
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-[#666]">
               Start with the facts. Then write the fear underneath them.
             </p>
           </div>
@@ -138,18 +153,6 @@ export default function PressurePage() {
           <p className="mt-3 text-xs leading-5 text-[#777]">
             Write at least a few sentences. The summary works better when the
             pressure has enough detail.
-          </p>
-        </section>
-
-        <section className="rounded-3xl border border-[#1f1f1f]/10 bg-white p-6 shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7a5c3a]">
-            Why this step matters
-          </p>
-
-          <p className="mt-3 text-sm leading-7 text-[#555]">
-            Stress is shaped not only by what happens, but also by how we
-            interpret what happens and whether we believe we can respond. This
-            step separates the situation from the meaning attached to it.
           </p>
         </section>
 
@@ -286,6 +289,10 @@ function buildPlaceholder(session: UnderPressureSession) {
 
   if (domain === "Social comparison") {
     return "Example: The fact is that I see other people moving faster. The fear is that their progress means I am behind, late, or less successful.";
+  }
+
+  if (domain === "Relationships") {
+    return "Example: The fact is that this relationship feels uncertain or unbalanced. The fear is that if the other person does not show the same effort, it means I am not valued, not chosen, or more invested than they are.";
   }
 
   return "Example: The fact is that I am facing a real pressure. The fear is that if this does not work out, it means something painful about my future, capability, or worth.";
